@@ -9,3 +9,4 @@ coverage/
 .vite/
 apps/api/dist/
 apps/web/dist/
+apps/api/uploads/

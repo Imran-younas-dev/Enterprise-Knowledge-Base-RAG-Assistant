@@ -4,7 +4,7 @@ Internal knowledge assistant: an authenticated employee uploads approved documen
 
 ## Stack
 
-React + TypeScript, NestJS + TypeScript, PostgreSQL + pgvector, Redis + BullMQ, an LLM and embedding API.
+React + TypeScript, NestJS (JavaScript, see `apps/api/NESTJS-STRUCTURE.md`), PostgreSQL + pgvector, Redis + BullMQ, an LLM and embedding API. The day-by-day schedule is `docs/30-day-plan.md`.
 
 ## Components
 

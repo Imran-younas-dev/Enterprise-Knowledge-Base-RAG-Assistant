@@ -1,5 +1,7 @@
 # Implementation plan
 
+The day-by-day schedule is `docs/30-day-plan.md`. This file is the phase outline behind that schedule.
+
 Build one working slice at a time. Do not claim performance until it is measured.
 
 ## Phase 0 — Setup

@@ -1,12 +1,21 @@
-import type { ReactNode } from 'react';
+import type { ReactNode } from 'react'
+import { TopBar, type AppPage } from './TopBar'
 
-export function AppShell({ children }: { children: ReactNode }) {
+export function AppShell({
+  page,
+  onPageChange,
+  children,
+}: {
+  page: AppPage
+  onPageChange: (page: AppPage) => void
+  children: ReactNode
+}) {
   return (
-    <main style={{ maxWidth: 720, margin: '0 auto', padding: '3rem 1.5rem' }}>
-      <p style={{ letterSpacing: '0.08em', textTransform: 'uppercase', fontSize: 12 }}>
-        Enterprise knowledge base
-      </p>
-      {children}
-    </main>
-  );
+    <div className="app-bg">
+      <section className="app-frame">
+        <TopBar page={page} onPageChange={onPageChange} />
+        {children}
+      </section>
+    </div>
+  )
 }
