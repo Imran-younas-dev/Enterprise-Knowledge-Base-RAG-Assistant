@@ -1,5 +1,7 @@
 # Enterprise Knowledge Base RAG Assistant
 
+![AI Knowledge RAG dashboard](apps/web/UI.jpeg)
+
 Internal assistant that answers questions from company documents and shows citations. The screen to match is `apps/web/UI.jpeg`.
 
 The API follows `apps/api/NESTJS-STRUCTURE.md` (JavaScript, Babel, one action per service). The schedule is `docs/30-day-plan.md`. Read the "Before Day 1" section in that file before writing feature code.
