@@ -4,7 +4,7 @@ Internal knowledge assistant: an authenticated employee uploads approved documen
 
 ## Stack
 
-React + TypeScript, NestJS (JavaScript, see `apps/api/NESTJS-STRUCTURE.md`), PostgreSQL + pgvector, Redis + BullMQ, an LLM and embedding API. The day-by-day schedule is `docs/30-day-plan.md`.
+React + TypeScript, NestJS (JavaScript, see `apps/api/NESTJS-STRUCTURE.md`), MySQL 9, Redis + BullMQ, an LLM and embedding API. The day-by-day schedule is `docs/30-day-plan.md`.
 
 ## Components
 
@@ -12,7 +12,7 @@ React + TypeScript, NestJS (JavaScript, see `apps/api/NESTJS-STRUCTURE.md`), Pos
 |---|---|
 | React UI (`apps/web`) | Upload documents, show status, ask questions, show answers and citations |
 | NestJS API (`apps/api`) | Validate requests, enforce permissions, coordinate services |
-| PostgreSQL + pgvector | Users, documents, chunks, embeddings, similarity search |
+| MySQL 9 | Users, documents, chunks, embeddings, and similarity search |
 | Redis + BullMQ | Queue long-running ingestion so uploads return quickly |
 | Ingestion worker (`workers`) | Parse, chunk, embed, and index a document |
 | File storage | Keep the original file for reprocessing |
@@ -23,7 +23,7 @@ The application retrieves authorized evidence first, then sends that evidence to
 
 ## Flows
 
-**Ingestion:** sign in → upload → validate → store file and a `queued` document → enqueue a job → parse → chunk with source metadata → embed → store in pgvector → mark `ready` only after indexing succeeds.
+**Ingestion:** sign in → upload → validate → store file and a `queued` document → enqueue a job → parse → chunk with source metadata → embed → store the vector in MySQL → mark `ready` only after indexing succeeds.
 
 **Question:** authenticate → embed the question → search only authorized chunks → check evidence → generate an answer with citations that refer to retrieved chunks → return the answer. Authorization is enforced in retrieval, not only in the prompt.
 
@@ -43,6 +43,8 @@ The application retrieves authorized evidence first, then sends that evidence to
 
 - `users` — identity
 - `documents` — file metadata, storage key, content hash, status
-- `document_chunks` — text, embedding, page/section, document and version
+- `document_chunks` — text, a MySQL `VECTOR` column, page/section, document and version
+
+Embeddings use MySQL 9’s `VECTOR` type. Retrieval orders authorized chunks with `DISTANCE(..., 'COSINE')`. That is an exact scan over the chunks the user may see, which is the right fit for this project. MySQL 8 does not have this type, so the Compose file uses `mysql:9`.
 
 Full product notes remain in `enterprise-rag-assistant-architecture.md` at the repository root.

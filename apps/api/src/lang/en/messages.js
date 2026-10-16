@@ -1,1 +1,3 @@
-export default {}
+export default {
+    healthOk: 'Health check successful',
+}

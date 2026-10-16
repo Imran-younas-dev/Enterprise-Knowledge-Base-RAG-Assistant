@@ -62,7 +62,7 @@ Say these out loud in your own words:
 ### Tools
 
 - `git status`, `git diff`, `git commit`
-- What `docker compose up -d` starts: PostgreSQL with pgvector, and Redis
+- What `docker compose up -d` starts: MySQL 9 and Redis. Embeddings go in a `VECTOR` column, not a separate vector database.
 - Copy `.env.example` to `.env`. Never commit `.env`
 
 ### Check you are ready
@@ -108,13 +108,13 @@ You can explain the six API folders under `apps/api/src/modules/` (`health`, `au
 
 ## Day 3 — Database and Redis on your machine
 
-**Block 1 (50 min).** Copy `.env.example` to `.env`. Run `docker compose up -d`. Confirm Postgres and Redis accept connections.
+**Block 1 (50 min).** Copy `.env.example` to `.env`. Run `docker compose up -d`. Confirm MySQL and Redis accept connections. The database image is `mysql:9` because the `VECTOR` type is not in MySQL 8.
 
-**Block 2 (100 min).** Add `sequelize`, `sequelize-typescript`, `pg`, and `sequelize-cli`. Point `src/models/AbstractModel.js` at `sequelize-typescript`'s `Model`. Build a Sequelize instance in `src/models/index.js` from `src/config/database.js`. Add `npm run migrate` using `.sequelizerc`.
+**Block 2 (100 min).** Add `sequelize`, `sequelize-typescript`, `mysql2`, and `sequelize-cli`. Point `src/models/AbstractModel.js` at `sequelize-typescript`'s `Model`. Build a Sequelize instance in `src/models/index.js` from `src/config/database.js` (`dialect: 'mysql'`). Add `npm run migrate` using `.sequelizerc`.
 
 **Block 3 (90 min).** Call `sequelize.authenticate()` from a script in `src/scripts/` (run with `babel-node`). Do not connect by importing models from a controller yet.
 
-**Done when:** the script prints that Postgres answered, and the HTTP API still boots if you do not run the script.
+**Done when:** the script prints that MySQL answered, and the HTTP API still boots if you do not run the script.
 
 **You can explain:** why `src/config/database.js` stays CommonJS.
 
@@ -198,7 +198,7 @@ You can explain the six API folders under `apps/api/src/modules/` (`health`, `au
 
 **Block 3 (60 min).** A script writes chunks for one local file. The Document Chunks panel still uses sample data today. Tomorrow it can read these rows.
 
-**Done when:** you can open the chunk rows in Postgres and see the source text you expect.
+**Done when:** you can open the chunk rows in MySQL and see the source text you expect.
 
 **You can explain:** what goes wrong if chunks are tiny, and what goes wrong if a chunk is larger than the model context.
 
@@ -206,7 +206,7 @@ You can explain the six API folders under `apps/api/src/modules/` (`health`, `au
 
 **Block 1 (60 min).** Pick one embedding model. Write the provider name, model name, and vector size at the top of `.env.example` as placeholders (no secret in git).
 
-**Block 2 (100 min).** `src/helpers/embed-texts.js` sends batches and returns vectors. Add a `vector(<size>)` column via a migration. You need the `pgvector` extension in a migration (`CREATE EXTENSION IF NOT EXISTS vector`).
+**Block 2 (100 min).** `src/helpers/embed-texts.js` sends batches and returns vectors. Add the embedding column in a migration as `VECTOR(<size>)` (the size must match the model). Sequelize has no `VECTOR` type, so write that column in the migration SQL and read it back with a raw query. Store a vector with `STRING_TO_VECTOR`.
 
 **Block 3 (80 min).** Store embeddings for the script's chunks. If the provider fails, leave the document `failed` with a safe error summary, not the raw provider body.
 
@@ -216,7 +216,7 @@ You can explain the six API folders under `apps/api/src/modules/` (`health`, `au
 
 ## Day 12 — Retrieve passages
 
-**Block 1 (80 min).** `src/modules/retrieval/search.service.js` embeds the question and runs a similarity query limited to the caller's documents. Start with a configurable top-k (default 4).
+**Block 1 (80 min).** `src/modules/retrieval/search.service.js` embeds the question and runs a similarity query limited to the caller's documents. Rank with `ORDER BY DISTANCE(embedding, STRING_TO_VECTOR(?), 'COSINE')` and a configurable top-k (default 4). This scans the authorized rows. That is expected on MySQL 9.
 
 **Block 2 (70 min).** `POST /api/retrieval/search` with a DTO (`question` required, `mode` optional). Map modes: `web` top-k 4, `deep` top-k 8, `thinking` same as web but the response includes a flag the UI can use.
 

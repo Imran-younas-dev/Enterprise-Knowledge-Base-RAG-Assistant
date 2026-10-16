@@ -6,7 +6,7 @@ Build one working slice at a time. Do not claim performance until it is measured
 
 ## Phase 0 — Setup
 
-- This starter: repository layout, README, API, web app, Docker Compose for PostgreSQL (pgvector) and Redis.
+- This starter: repository layout, README, API, web app, Docker Compose for MySQL 9 and Redis.
 - Next: choose one LLM provider and one embedding model, and record their names.
 
 **Done when** a new developer can start the API and web app from the README.
@@ -42,5 +42,5 @@ Build one working slice at a time. Do not claim performance until it is measured
 
 ## Phase 6 — Deployment
 
-- Deploy UI, API, worker, PostgreSQL, Redis, and file storage.
+- Deploy UI, API, worker, MySQL 9, Redis, and file storage.
 - Health checks, migrations, and a demo of upload, a cited answer, an unanswerable question, and deletion.

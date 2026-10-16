@@ -45,7 +45,7 @@ npm run cron-dev
 
 ## Local data services
 
-PostgreSQL with pgvector and Redis are for the database days in the plan. They are not required to open the starter UI.
+MySQL 9 and Redis are for the database days in the plan. They are not required to open the starter UI. MySQL 9 stores embeddings in a `VECTOR` column and ranks them with `DISTANCE`.
 
 ```bash
 docker compose up -d
@@ -55,5 +55,5 @@ Copy `.env.example` to `.env` when you reach those days. `.env.example` has plac
 
 | Service | URL | Credentials |
 |---|---|---|
-| PostgreSQL | `localhost:5432` | user `rag`, password `rag`, database `rag` |
+| MySQL 9 | `localhost:3306` | user `rag`, password `rag`, database `rag` |
 | Redis | `localhost:6379` | none |

@@ -2,7 +2,7 @@
 
 > **Status:** Planning  
 > **Goal:** Build, test, deploy, and confidently explain an end-to-end RAG application.  
-> **Primary stack:** React + TypeScript, NestJS + TypeScript, PostgreSQL + pgvector, Redis + BullMQ, an LLM/embedding API.  
+> **Primary stack:** React + TypeScript, NestJS, MySQL 9, Redis + BullMQ, an LLM/embedding API.  
 > **Build principle:** Start with a small working vertical slice, then add reliability and production features in phases. Do not claim performance results until measured.
 
 ## 1. Product definition
@@ -18,7 +18,7 @@ An employee uploads an internal payment-reconciliation policy and asks: “What 
 - Upload PDF, DOCX, TXT, and Markdown files.
 - Extract text and useful source metadata.
 - Split extracted text into chunks while retaining page/section references.
-- Generate embeddings and store them in PostgreSQL with pgvector.
+- Generate embeddings and store them in MySQL 9 `VECTOR` columns.
 - Retrieve relevant chunks and generate grounded answers with citations.
 - Show ingestion status, document status, and source passages in the UI.
 - Support document replacement, reprocessing, and deletion.
@@ -39,7 +39,7 @@ flowchart TD
     U[Employee] --> UI[React + TypeScript UI]
     UI --> API[NestJS API]
     API --> AUTH[Authentication and authorization]
-    API --> DB[(PostgreSQL + pgvector)]
+    API --> DB[(MySQL 9)]
     API --> OBJ[File storage: local in dev, object storage in deployment]
     API --> Q[Redis + BullMQ job queue]
     Q --> W[Document ingestion worker]
@@ -62,8 +62,8 @@ flowchart TD
 |---|---|---|
 | React + TypeScript | Upload documents, show processing status, submit questions, display answers and citations | User-facing workflow |
 | NestJS API | Validate requests, enforce permissions, coordinate services, return typed responses | A clear application boundary |
-| PostgreSQL | Store users, documents, ingestion state, chunks, conversations if needed, and audit metadata | Durable relational data |
-| pgvector | Store and search chunk embeddings | Similarity-based retrieval close to application data |
+| MySQL 9 | Store users, documents, ingestion state, chunks, conversations if needed, and audit metadata | Durable relational data |
+| MySQL `VECTOR` | Store and search chunk embeddings with `DISTANCE` | Similarity search in the same database as the documents |
 | Redis + BullMQ | Queue long-running ingestion jobs, retry transient failures, track job state | Upload requests should not wait for parsing and embedding to finish |
 | Ingestion worker | Parse, chunk, embed, and index a document | Separates slow background work from API request handling |
 | File storage | Preserve the original uploaded file | Allows reprocessing and source access |
@@ -84,7 +84,7 @@ flowchart TD
 6. The worker normalizes text conservatively, preserving meaningful headings, lists, tables, and page boundaries where possible.
 7. The worker splits text into overlapping chunks. Every chunk keeps document ID, chunk index, page/section, tenant or access scope, and version metadata.
 8. The worker requests embeddings for the chunks in batches, respecting provider limits and retry rules.
-9. The worker stores chunk text, metadata, and embedding vectors in PostgreSQL/pgvector, then marks the document `ready` only after indexing succeeds.
+9. The worker stores chunk text, metadata, and embedding vectors in MySQL, then marks the document `ready` only after indexing succeeds.
 10. The UI polls or receives status updates and lets the user know whether processing succeeded or failed.
 
 **Failure behavior:** use bounded retries for transient failures, record a useful error state, avoid duplicate chunks when a job is retried, and make reprocessing safe. Never show a document as ready before its index is usable.
@@ -133,7 +133,7 @@ Keep the schema small at first; evolve it when requirements justify it.
 - `document_id` (foreign key)
 - `chunk_index`
 - `content` (chunk text)
-- `embedding` (pgvector column using the selected model's vector dimension)
+- `embedding` (MySQL 9 `VECTOR` column using the selected model's vector dimension)
 - `page_number` (nullable), `section_title` (nullable)
 - `metadata` (JSONB for carefully chosen extensible metadata)
 - `created_at`
@@ -219,7 +219,7 @@ Complete each phase with a working demo, tests, and a short explanation in your 
 **Build**
 - Write the product scope and non-goals.
 - Create the repository, README, environment template, formatting/linting, and test setup.
-- Start PostgreSQL with pgvector and Redis locally, preferably with Docker Compose.
+- Start MySQL 9 and Redis locally, preferably with Docker Compose. Use MySQL 9, not MySQL 8, because the `VECTOR` type is required.
 - Choose one LLM provider and one embedding model; record model names and configuration.
 - Decide initial chunk size/overlap through experiments rather than treating one value as universally correct.
 
@@ -301,7 +301,7 @@ Complete each phase with a working demo, tests, and a short explanation in your 
 
 **Build in measured increments**
 1. Establish a vector-search baseline.
-2. Add PostgreSQL full-text/keyword retrieval and implement hybrid ranking or fusion.
+2. Add MySQL `FULLTEXT` keyword retrieval and implement hybrid ranking or fusion.
 3. Compare retrieval metrics on the same evaluation set.
 4. Test a reranker only if the evaluation shows a meaningful problem it may solve.
 5. Tune indexes, database queries, embedding batch sizes, and context limits.
@@ -314,7 +314,7 @@ Complete each phase with a working demo, tests, and a short explanation in your 
 ### Phase 6 — Deployment, observability, and portfolio polish
 
 **Build**
-- Deploy the frontend, API, worker, PostgreSQL/pgvector, Redis, and file storage using an appropriate hosting setup.
+- Deploy the frontend, API, worker, MySQL 9, Redis, and file storage using an appropriate hosting setup.
 - Configure health checks, structured logs, request IDs, ingestion failure monitoring, and safe operational alerts.
 - Add database migrations, backup/restore notes, and deployment instructions.
 - Write architecture and data-flow documentation, an API overview, limitations, and troubleshooting notes.
@@ -328,7 +328,7 @@ Complete each phase with a working demo, tests, and a short explanation in your 
 ## 8. Testing strategy
 
 - **Unit tests:** text normalization, chunk boundaries, metadata mapping, citation validation, permission predicates, and status transitions.
-- **Integration tests:** database persistence, pgvector retrieval, job retries, idempotent ingestion, deletion cleanup, and provider adapters with mocks where appropriate.
+- **Integration tests:** database persistence, MySQL vector retrieval, job retries, idempotent ingestion, deletion cleanup, and provider adapters with mocks where appropriate.
 - **End-to-end tests:** upload → processing → question → answer/citations; insufficient evidence; unauthorized access; deletion.
 - **Evaluation tests:** known questions, paraphrased questions, questions requiring multiple chunks, irrelevant questions, and questions with no answer in the corpus.
 - **Security tests:** oversized files, unsupported types, malicious document instructions, path/filename abuse, IDOR/cross-user access, and rate limits.
@@ -355,7 +355,7 @@ Do not invent targets or resume numbers. First collect a baseline, then define a
 
 Create short Architecture Decision Records (ADRs) as you make meaningful choices. Each ADR should contain: context, options considered, decision, trade-offs, and what would make you revisit it.
 
-- Why PostgreSQL + pgvector instead of a separate vector database for this version?
+- Why MySQL `VECTOR` instead of a separate vector database for this version?
 - Why use a background queue for ingestion, and what belongs in a job payload?
 - How were chunk size and overlap selected and evaluated?
 - How are page numbers and source links preserved across parsing and chunking?
@@ -371,7 +371,7 @@ Create short Architecture Decision Records (ADRs) as you make meaningful choices
 Practice explaining the project in this order:
 
 1. **Problem:** employees need trustworthy answers across internal documents and must verify the source.
-2. **Architecture:** React UI, NestJS API, PostgreSQL/pgvector, Redis/BullMQ worker, embedding model, and LLM.
+2. **Architecture:** React UI, NestJS API, MySQL 9, Redis/BullMQ worker, embedding model, and LLM.
 3. **Ingestion:** upload → parse → normalize → chunk → embed → index.
 4. **Question flow:** authorize → embed question → retrieve evidence → check evidence → generate → validate citations → return response.
 5. **Reliability:** retries, idempotency, status tracking, document versioning, and cleanup.
@@ -410,14 +410,14 @@ Only add claims after you have implemented and verified them.
 
 ### Resume bullet template (fill in only after measurement)
 
-> Built an enterprise knowledge-base RAG assistant using React, TypeScript, NestJS, PostgreSQL/pgvector, and Redis/BullMQ, implementing document ingestion, citation-backed semantic/hybrid retrieval, access controls, and repeatable retrieval evaluation; measured **[verified metric]** on **[dataset/test conditions]**.
+> Built an enterprise knowledge-base RAG assistant using React, TypeScript, NestJS, MySQL, and Redis/BullMQ, implementing document ingestion, citation-backed semantic/hybrid retrieval, access controls, and repeatable retrieval evaluation; measured **[verified metric]** on **[dataset/test conditions]**.
 
 ## 13. First seven work sessions
 
 Use these as focused sessions, not fixed calendar deadlines. Finish a session's deliverable before expanding scope.
 
 1. **Session 1:** Create repository, README, this architecture document, and a short list of supported file types and non-goals.
-2. **Session 2:** Run PostgreSQL + pgvector and Redis locally; create the first database migration and verify connectivity.
+2. **Session 2:** Run MySQL 9 and Redis locally; create the first database migration and verify connectivity.
 3. **Session 3:** Build a script that reads one sample document and prints extracted text with page/section metadata.
 4. **Session 4:** Implement chunking; inspect chunk boundaries manually and preserve source metadata.
 5. **Session 5:** Generate embeddings and persist chunks; write a query that returns the top-k relevant chunks.
