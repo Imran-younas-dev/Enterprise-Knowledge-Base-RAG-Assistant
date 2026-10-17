@@ -10,6 +10,7 @@
     "queue-dev": "eslint src --fix && babel-node queue.index.js",
     "lintfix": "eslint src --fix",
     "format": "prettier --write \"src/**/*.js\"",
+    "db:check": "babel-node src/scripts/check-database.js",
     "migrate": "sequelize-cli db:migrate",
     "undo": "sequelize-cli db:migrate:undo"
   },
@@ -17,6 +18,7 @@
     "@nestjs/common": "^11.1.6",
     "@nestjs/core": "^11.1.6",
     "@nestjs/platform-express": "^11.1.6",
+    "dotenv": "^16.6.1",
     "mysql2": "^3.15.2",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
