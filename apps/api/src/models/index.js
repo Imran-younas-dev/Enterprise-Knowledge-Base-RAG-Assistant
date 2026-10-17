@@ -1,8 +1,10 @@
 import { Sequelize } from 'sequelize-typescript'
 
 import databaseConfig from '../config/database'
+import Document from './Document'
+import User from './User'
 
-const models = []
+const models = [User, Document]
 const env = process.env.NODE_ENV || 'development'
 const config = databaseConfig[env]
 

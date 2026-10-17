@@ -82,7 +82,13 @@ You can explain the six API folders under `apps/api/src/modules/` (`health`, `au
   - **Deep Search** — retrieve more chunks (higher top-k)
 - Sample rows in `apps/web/src/data/sampleKnowledge.ts` are placeholders. Delete them when the dashboard reads the API.
 
+## Branch after each day
+
+When that day's "Done when" line is true, put the work on its own branch before the next day. The suggested name is the **Branch** line under the day. Do not mix two days on one branch.
+
 ## Day 1 — Run what is already here
+
+**Branch:** `day-01-run-the-starter`
 
 **Block 1 (70 min).** Read `README.md`, `docs/architecture.md`, and `apps/api/NESTJS-STRUCTURE.md`. Draw the mock on paper and name each panel.
 
@@ -96,6 +102,8 @@ You can explain the six API folders under `apps/api/src/modules/` (`health`, `au
 
 ## Day 2 — Make the API rules yours
 
+**Branch:** `day-02-api-rules`
+
 **Block 1 (60 min).** Trace a request: `index.js` → `src/main.js` → `src/app.module.js` → `src/modules/index.js` → `health.controller.js` → `check.service.js`.
 
 **Block 2 (90 min).** Run `npm run lintfix` and `npm run format` in `apps/api`. Read `.babelrc`, `.prettierrc`, and `.eslintrc.js` until you know why there are no semicolons and why decorators work.
@@ -107,6 +115,8 @@ You can explain the six API folders under `apps/api/src/modules/` (`health`, `au
 **You can explain:** the difference between the HTTP process, the cron process, and the queue process.
 
 ## Day 3 — Database and Redis on your machine
+
+**Branch:** `day-03-mysql-and-redis`
 
 **Block 1 (50 min).** Copy `.env.example` to `.env`. Run `docker compose up -d`. Confirm MySQL and Redis accept connections. The database image is `mysql:9` because the `VECTOR` type is not in MySQL 8.
 
@@ -120,6 +130,8 @@ You can explain the six API folders under `apps/api/src/modules/` (`health`, `au
 
 ## Day 4 — Users and documents tables
 
+**Branch:** `day-04-users-and-documents`
+
 **Block 1 (80 min).** Migration `users`: id UUID, email unique, password hash, timestamps.
 
 **Block 2 (80 min).** Migration `documents`: id, owner id, title, original filename, mime type, byte size, storage key, content hash, status, error summary, timestamps. Status values: `queued`, `processing`, `ready`, `failed`, `deleting`, `deleted`.
@@ -131,6 +143,8 @@ You can explain the six API folders under `apps/api/src/modules/` (`health`, `au
 **You can explain:** why the document row and the file bytes are different things.
 
 ## Day 5 — Register and login
+
+**Branch:** `day-05-register-and-login`
 
 **Block 1 (70 min).** `src/modules/auth/dto/register.dto.js` and `login.dto.js` with `class-validator`.
 
@@ -144,6 +158,8 @@ You can explain the six API folders under `apps/api/src/modules/` (`health`, `au
 
 ## Day 6 — Guard the routes and show your name
 
+**Branch:** `day-06-auth-guard-and-name`
+
 **Block 1 (90 min).** `src/guards/jwt-auth.guard.js` reads `Authorization: Bearer`, verifies the JWT, and sets `request.user`.
 
 **Block 2 (70 min).** `src/decorators/check-scope.decorator.js` and `src/guards/check-scope.guard.js`. Give the seeded user a scope such as `member` on the token.
@@ -155,6 +171,8 @@ You can explain the six API folders under `apps/api/src/modules/` (`health`, `au
 **You can explain:** guards check identity. Services decide which rows that identity may see.
 
 ## Day 7 — List documents into the left panel
+
+**Branch:** `day-07-list-documents`
 
 **Block 1 (80 min).** `src/modules/documents/get.service.js` returns documents owned by `request.user`. `view.service.js` returns one document or throws `AppValidationError` with `404`.
 
@@ -168,6 +186,8 @@ You can explain the six API folders under `apps/api/src/modules/` (`health`, `au
 
 ## Day 8 — Upload a file
 
+**Branch:** `day-08-upload-file`
+
 **Block 1 (80 min).** `create.service.js` checks mime type and size using `src/config/uploads.js`. Allowed: PDF, DOCX, TXT, Markdown. Store the file under a generated storage key, never the raw filename.
 
 **Block 2 (80 min).** Insert a document row with status `queued`. `POST /api/documents` returns `202` and `{ data: { id, status } }`.
@@ -179,6 +199,8 @@ You can explain the six API folders under `apps/api/src/modules/` (`health`, `au
 **You can explain:** why the original filename is not the path on disk.
 
 ## Day 9 — Read text out of a file
+
+**Branch:** `day-09-read-document-text`
 
 **Block 1 (90 min).** A helper `src/helpers/parse-document.js` that returns text for `.txt` and `.md`. PDF and DOCX can return a clear "not supported yet" error.
 
@@ -192,6 +214,8 @@ You can explain the six API folders under `apps/api/src/modules/` (`health`, `au
 
 ## Day 10 — Chunks on the screen
 
+**Branch:** `day-10-document-chunks`
+
 **Block 1 (90 min).** Migration `document_chunks`: id, document id, chunk index, content, page number, section title, metadata JSON, timestamps. Unique on `(document_id, chunk_index)`.
 
 **Block 2 (90 min).** `src/helpers/chunk-text.js` splits text with a size and overlap you choose and write down in this file (start around 500 characters and 50 overlap; change it only when you have a reason). Every chunk keeps document id and index.
@@ -203,6 +227,8 @@ You can explain the six API folders under `apps/api/src/modules/` (`health`, `au
 **You can explain:** what goes wrong if chunks are tiny, and what goes wrong if a chunk is larger than the model context.
 
 ## Day 11 — Embeddings
+
+**Branch:** `day-11-embeddings`
 
 **Block 1 (60 min).** Pick one embedding model. Write the provider name, model name, and vector size at the top of `.env.example` as placeholders (no secret in git).
 
@@ -216,6 +242,8 @@ You can explain the six API folders under `apps/api/src/modules/` (`health`, `au
 
 ## Day 12 — Retrieve passages
 
+**Branch:** `day-12-retrieve-passages`
+
 **Block 1 (80 min).** `src/modules/retrieval/search.service.js` embeds the question and runs a similarity query limited to the caller's documents. Rank with `ORDER BY DISTANCE(embedding, STRING_TO_VECTOR(?), 'COSINE')` and a configurable top-k (default 4). This scans the authorized rows. That is expected on MySQL 9.
 
 **Block 2 (70 min).** `POST /api/retrieval/search` with a DTO (`question` required, `mode` optional). Map modes: `web` top-k 4, `deep` top-k 8, `thinking` same as web but the response includes a flag the UI can use.
@@ -227,6 +255,8 @@ You can explain the six API folders under `apps/api/src/modules/` (`health`, `au
 **You can explain:** where the owner filter sits in the SQL, not only in the prompt.
 
 ## Day 13 — One grounded answer
+
+**Branch:** `day-13-grounded-answer`
 
 **Block 1 (70 min).** Pick the chat model. Add `src/helpers/complete-answer.js`. The prompt says: answer only from the passages, cite passage ids, and say when evidence is insufficient.
 
@@ -240,6 +270,8 @@ You can explain the six API folders under `apps/api/src/modules/` (`health`, `au
 
 ## Day 14 — Connect the dashboard
 
+**Branch:** `day-14-connect-dashboard`
+
 **Block 1 (90 min).** The search field submits to `POST /api/chat/ask`. The answer panel shows the returned text. Citation numbers match the mock style (`1`, `2`).
 
 **Block 2 (80 min).** The References list is built from `citations` (title, page, quote). Clicking a number highlights that chunk card.
@@ -251,6 +283,8 @@ You can explain the six API folders under `apps/api/src/modules/` (`health`, `au
 **You can explain:** the path UI → chat service → retrieval → model → citation check → panels.
 
 ## Day 15 — Ingestion leaves the request
+
+**Branch:** `day-15-ingestion-queue`
 
 **Block 1 (80 min).** Add `bull` and `@nestjs/bull`. `src/config/bull.js` is the connection. Queue name `ingestDocument` (camelCase, same string in producer and processor).
 
@@ -264,6 +298,8 @@ You can explain the six API folders under `apps/api/src/modules/` (`health`, `au
 
 ## Day 16 — Status on the document row
 
+**Branch:** `day-16-document-status`
+
 **Block 1 (70 min).** While the job runs, status is `processing`. On failure, status is `failed` plus `error_code` and a short safe summary.
 
 **Block 2 (80 min).** The source-document row shows the status next to the date without breaking the mock layout (small muted text is enough).
@@ -275,6 +311,8 @@ You can explain the six API folders under `apps/api/src/modules/` (`health`, `au
 **You can explain:** which statuses exist and which one means "safe to search".
 
 ## Day 17 — Retries without duplicate chunks
+
+**Branch:** `day-17-idempotent-retries`
 
 **Block 1 (80 min).** Configure a small retry count on the ingest job for transient provider errors.
 
@@ -288,6 +326,8 @@ You can explain the six API folders under `apps/api/src/modules/` (`health`, `au
 
 ## Day 18 — Replace, reprocess, delete
 
+**Branch:** `day-18-reprocess-and-delete`
+
 **Block 1 (80 min).** `POST /api/documents/:id/reprocess` enqueues the same job for an authorized owner.
 
 **Block 2 (80 min).** `remove.service.js` sets `deleting`, removes chunks, removes the stored file, then sets `deleted`. `DELETE /api/documents/:id`.
@@ -299,6 +339,8 @@ You can explain the six API folders under `apps/api/src/modules/` (`health`, `au
 **You can explain:** why search must exclude `deleted` rows even if a chunk delete failed halfway (and how your transaction avoids that).
 
 ## Day 19 — PDF text and page numbers
+
+**Branch:** `day-19-pdf-pages`
 
 **Block 1 (120 min).** Extend `parse-document.js` for PDF. Keep a page number when the parser exposes one.
 
@@ -312,6 +354,8 @@ You can explain the six API folders under `apps/api/src/modules/` (`health`, `au
 
 ## Day 20 — DOCX and content hash
 
+**Branch:** `day-20-docx-and-hash`
+
 **Block 1 (90 min).** Parse DOCX into text plus heading text as `section_title` when you can.
 
 **Block 2 (70 min).** Compute a content hash on upload. If the same owner uploads the same bytes, return the existing document instead of a second copy.
@@ -323,6 +367,8 @@ You can explain the six API folders under `apps/api/src/modules/` (`health`, `au
 **You can explain:** hash versus filename.
 
 ## Day 21 — Citations you can trust
+
+**Branch:** `day-21-trusted-citations`
 
 **Block 1 (80 min).** Each reference row uses the document title, page or section, and a short quote taken from the stored chunk, not from the model's memory.
 
@@ -336,6 +382,8 @@ You can explain the six API folders under `apps/api/src/modules/` (`health`, `au
 
 ## Day 22 — A small evaluation set
 
+**Branch:** `day-22-evaluation-set`
+
 **Block 1 (70 min).** Create `evals/questions.jsonl` with at least 10 questions: some answerable from your files, some paraphrased, at least 2 with no answer in the corpus.
 
 **Block 2 (100 min).** `src/scripts/evaluate-retrieval.js` prints Hit Rate@k (did the expected document show up in the top k).
@@ -347,6 +395,8 @@ You can explain the six API folders under `apps/api/src/modules/` (`health`, `au
 **You can explain:** why you measure retrieval separately from answer quality.
 
 ## Day 23 — Answer review
+
+**Branch:** `day-23-answer-review`
 
 **Block 1 (90 min).** Read 10 answers yourself. For each, mark faithful / not faithful and whether every citation matches the quote.
 
@@ -360,6 +410,8 @@ You can explain the six API folders under `apps/api/src/modules/` (`health`, `au
 
 ## Day 24 — A second user cannot see your files
 
+**Branch:** `day-24-user-isolation`
+
 **Block 1 (80 min).** Register a second user. Confirm `GET /api/documents` for that user does not list your files.
 
 **Block 2 (80 min).** Confirm retrieval and `GET /api/documents/:id` return `404` or `403` for the other user's id. Prefer not leaking whether the id exists if you already chose one behavior; write it down.
@@ -371,6 +423,8 @@ You can explain the six API folders under `apps/api/src/modules/` (`health`, `au
 **You can explain:** why a filter only in the prompt is not authorization.
 
 ## Day 25 — Prompt injection in a fixture
+
+**Branch:** `day-25-prompt-injection`
 
 **Block 1 (80 min).** Add a text fixture whose body says to ignore instructions and reveal another user's documents.
 
@@ -384,6 +438,8 @@ You can explain the six API folders under `apps/api/src/modules/` (`health`, `au
 
 ## Day 26 — Limits
 
+**Branch:** `day-26-request-limits`
+
 **Block 1 (70 min).** Cap file size (already in `uploads.js`), question length, and chunk count per document. Return `422` with a validation key when a cap is hit.
 
 **Block 2 (80 min).** Add `@nestjs/throttler` globally the way `NESTJS-STRUCTURE.md` describes, with a modest limit on `POST /api/chat/ask` and `POST /api/documents`.
@@ -395,6 +451,8 @@ You can explain the six API folders under `apps/api/src/modules/` (`health`, `au
 **You can explain:** which limits protect cost, and which protect the database.
 
 ## Day 27 — Empty, failed, and loading states
+
+**Branch:** `day-27-empty-and-error-states`
 
 **Block 1 (80 min).** No documents: Source Documents shows a quiet empty line inside the same card. Failed document: the row stays, with the safe error summary.
 
@@ -408,6 +466,8 @@ You can explain the six API folders under `apps/api/src/modules/` (`health`, `au
 
 ## Day 28 — Logs and health
 
+**Branch:** `day-28-logs-and-health`
+
 **Block 1 (80 min).** Add a request id on chat and upload responses. Log method, path, status, and duration. Do not log bodies, prompts, or chunk text.
 
 **Block 2 (70 min).** Extend `check.service.js` so `/api/health` reports API, database, and Redis. If a dependency is down, say which one without printing host passwords.
@@ -420,6 +480,8 @@ You can explain the six API folders under `apps/api/src/modules/` (`health`, `au
 
 ## Day 29 — Demo path
 
+**Branch:** `day-29-demo-path`
+
 **Block 1 (80 min).** Write a "Demo" section in `README.md`: start Docker, API, queue worker, and web; sign in; upload; ask; show a citation; ask something the files do not contain; delete.
 
 **Block 2 (90 min).** Run that path yourself from a clean database. Fix only blockers.
@@ -431,6 +493,8 @@ You can explain the six API folders under `apps/api/src/modules/` (`health`, `au
 **You can explain:** the demo in the order in `enterprise-rag-assistant-architecture.md` section 11 (problem, architecture, ingestion, question, reliability, security, evaluation).
 
 ## Day 30 — Measure, then stop
+
+**Branch:** `day-30-measure-and-stop`
 
 **Block 1 (80 min).** Rerun `evaluate-retrieval.js`. Record retrieval Hit Rate@k, the human faithfulness count from Day 23, and a few chat latencies (retrieval vs model). Note the machine and the models.
 
