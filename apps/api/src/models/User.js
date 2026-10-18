@@ -14,6 +14,9 @@ import AbstractModel from './AbstractModel'
     tableName: 'users',
     timestamps: true,
     underscored: true,
+    defaultScope: {
+        attributes: { exclude: ['passwordHash'] },
+    },
 })
 export default class User extends AbstractModel {
     @PrimaryKey
