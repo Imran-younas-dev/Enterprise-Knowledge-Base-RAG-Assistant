@@ -8,9 +8,11 @@ export class AllExceptionsFilter {
         const response = host.switchToHttp().getResponse()
 
         if (exception instanceof AppValidationError) {
-            return response.status(exception.code).json({
-                message: exception.message,
-            })
+            const payload = { message: exception.message }
+            if (exception.errors) {
+                payload.errors = exception.errors
+            }
+            return response.status(exception.code).json(payload)
         }
 
         if (exception instanceof HttpException) {
