@@ -15,6 +15,14 @@ module.exports = {
             return
         }
 
+        const [existing] = await queryInterface.sequelize.query(
+            'SELECT id FROM users WHERE email = :email LIMIT 1',
+            { replacements: { email: seedEmail } }
+        )
+        if (existing.length) {
+            return
+        }
+
         await queryInterface.bulkInsert('users', [
             {
                 id: '6f1c2a40-7b2e-4c1a-9d5e-1a2b3c4d5e6f',

@@ -56,6 +56,27 @@ type ErrorEnvelope = {
   message?: string
 }
 
+export type ApiDocument = {
+  id: string
+  title: string
+  originalFilename: string
+  mimeType: string
+  fileSizeBytes: number
+  status: string
+  createdAt: string
+}
+
+export async function fetchDocuments(token: string): Promise<ApiDocument[]> {
+  const response = await fetch('/api/documents', {
+    headers: { authorization: `Bearer ${token}` },
+  })
+  const body = (await response.json()) as Envelope<ApiDocument[]> & ErrorEnvelope
+  if (!response.ok) {
+    throw new Error(body.message || 'Could not load documents')
+  }
+  return body.data
+}
+
 export async function login(email: string, password: string): Promise<LoginResponse> {
   const response = await fetch('/api/auth/login', {
     method: 'POST',

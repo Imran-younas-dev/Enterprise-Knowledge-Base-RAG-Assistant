@@ -92,7 +92,7 @@ When that day's "Done when" line is true, put the work on its own branch before 
 
 **Block 1 (70 min).** Read `README.md`, `docs/architecture.md`, and `apps/api/NESTJS-STRUCTURE.md`. Draw the mock on paper and name each panel.
 
-**Block 2 (80 min).** From `apps/api`: `npm install`, then `npm run dev`. Open `http://localhost:3000/api/health` and confirm `{ "data": { "status": "ok" } }`. Start `npm run cron-dev` and `npm run queue-dev` in two other terminals and confirm each process stays up.
+**Block 2 (80 min).** From `apps/api`: `npm install`, then `npm run dev`. Open `http://localhost:6000/api/health` and confirm `{ "data": { "status": "ok" } }`. Start `npm run cron-dev` and `npm run queue-dev` in two other terminals and confirm each process stays up.
 
 **Block 3 (90 min).** From `apps/web`: `npm install`, then `npm run dev`. Open `http://localhost:5173`. Click Dashboard, Documents, and Settings. Compare the dashboard with `apps/web/UI.jpeg` and write a short list of visual gaps (spacing, colors, type). Fix only those gaps in `apps/web/src/index.css`.
 

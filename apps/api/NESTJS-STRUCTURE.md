@@ -17,7 +17,7 @@ Three entry points. Each boots its own Nest application.
 `index.js`, `cron.index.js`, and `queue.index.js` only load `@babel/register` (or `babel-node`) and then the boot file.
 
 - Global prefix is `api`. A controller `@Controller('categories')` is `GET /api/categories`.
-- Listen on `process.env.PORT` or `3000`.
+- Listen on `process.env.PORT` or `6000`.
 - Dev scripts run ESLint `--fix`, then `babel-node`. See `package.json` scripts `dev`, `cron-dev`, `queue-dev`.
 - Production build: `babel src --out-dir dist --copy-files`.
 

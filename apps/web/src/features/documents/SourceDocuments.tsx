@@ -18,6 +18,7 @@ export function SourceDocuments({
           <MoreIcon />
         </button>
       </header>
+      {documents.length === 0 ? <p className="page-note">No documents yet.</p> : null}
       <ul className="doc-list">
         {documents.map((document) => (
           <li key={document.id}>
