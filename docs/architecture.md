@@ -15,7 +15,7 @@ React + TypeScript, NestJS (JavaScript, see `apps/api/NESTJS-STRUCTURE.md`), MyS
 | MySQL 9 | Users, documents, chunks, embeddings, and similarity search |
 | Redis + BullMQ | Queue long-running ingestion so uploads return quickly |
 | Ingestion worker (`workers`) | Parse, chunk, embed, and index a document |
-| File storage | Keep the original file for reprocessing |
+| File storage | Keep the original file in Cloudinary for reprocessing. The storage key is generated and is not the original filename. |
 | Embedding model | Vectors for chunks and questions in the same space |
 | LLM | Compose an answer from retrieved evidence only |
 

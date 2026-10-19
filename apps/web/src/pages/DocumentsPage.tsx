@@ -1,13 +1,15 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { SourceDocument } from '../data/sampleKnowledge'
 import { SourceDocuments } from '../features/documents/SourceDocuments'
 import { toSourceDocument } from '../features/documents/toSourceDocument'
-import { fetchDocuments } from '../lib/api'
+import { fetchDocuments, uploadDocument } from '../lib/api'
 
 export function DocumentsPage({ token }: { token: string }) {
+  const fileInput = useRef<HTMLInputElement>(null)
   const [documents, setDocuments] = useState<SourceDocument[]>([])
   const [selectedId, setSelectedId] = useState('')
   const [listError, setListError] = useState('')
+  const [pending, setPending] = useState(false)
 
   useEffect(() => {
     let active = true
@@ -32,6 +34,29 @@ export function DocumentsPage({ token }: { token: string }) {
     }
   }, [token])
 
+  async function handleFile(file: File | undefined) {
+    if (!file) {
+      return
+    }
+    setListError('')
+    setPending(true)
+    try {
+      await uploadDocument(token, file)
+      const rows = await fetchDocuments(token)
+      const next = rows.map(toSourceDocument)
+      setDocuments(next)
+      setSelectedId(next[0]?.id ?? '')
+    } catch (caught) {
+      const message = caught instanceof Error ? caught.message : 'Upload failed'
+      setListError(message)
+    } finally {
+      setPending(false)
+      if (fileInput.current) {
+        fileInput.current.value = ''
+      }
+    }
+  }
+
   return (
     <div className="dashboard">
       <h1>Documents</h1>
@@ -42,9 +67,23 @@ export function DocumentsPage({ token }: { token: string }) {
       <div className="workspace single">
         <section className="panel upload-panel">
           <h2>Add a document</h2>
-          <p>PDF, DOCX, TXT, and Markdown. The upload action arrives with the documents API.</p>
-          <button type="button" className="primary-button" disabled>
-            Choose file
+          <p>PDF, DOCX, TXT, and Markdown. The file is stored now. Parsing comes later.</p>
+          <input
+            ref={fileInput}
+            type="file"
+            accept=".pdf,.docx,.txt,.md,.markdown"
+            hidden
+            onChange={(event) => {
+              void handleFile(event.target.files?.[0])
+            }}
+          />
+          <button
+            type="button"
+            className="primary-button"
+            disabled={pending}
+            onClick={() => fileInput.current?.click()}
+          >
+            {pending ? 'Uploading…' : 'Choose file'}
           </button>
         </section>
         <SourceDocuments documents={documents} selectedId={selectedId} onSelect={setSelectedId} />

@@ -5,5 +5,9 @@ export default {
     invalidCredentials: 'Email or password is incorrect',
     authNotConfigured: 'Authentication is not configured',
     unauthorized: 'Sign in to continue',
-    insufficientScope: 'You do not have access to this action',
+    fileRequired: 'Choose a file to upload',
+    fileTooLarge: 'That file is too large',
+    unsupportedType: 'Upload a PDF, DOCX, TXT, or Markdown file',
+    uploadNotConfigured: 'File storage is not configured',
+    uploadFailed: 'The file could not be stored',
 }
