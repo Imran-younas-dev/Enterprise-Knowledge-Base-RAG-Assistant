@@ -2,6 +2,7 @@ import {
     Bind,
     Controller,
     Dependencies,
+    Get,
     Post,
     Req,
     Res,
@@ -10,12 +11,16 @@ import {
 
 /* import services */
 import { LoginService } from './login.service'
+import { MeService } from './me.service'
 import { RegisterService } from './register.service'
 
 /* import guards */
+import { CheckScopeGuard } from '../../guards/check-scope.guard'
+import { AuthGuard } from '../../guards/jwt-auth.guard'
 import { ValidateRequestGuard } from '../../guards/validate-request.guard'
 
 /* import decorators */
+import { CheckScope } from '../../decorators/check-scope.decorator'
 import { ValidateRequest } from '../../decorators/validate-request.decorators'
 
 /* import dto */
@@ -28,6 +33,16 @@ export class AuthController {
     constructor() {
         this.registerService = new RegisterService()
         this.loginService = new LoginService()
+        this.meService = new MeService()
+    }
+
+    @Get('me')
+    @CheckScope(['member'])
+    @UseGuards(AuthGuard, CheckScopeGuard)
+    @Bind(Req(), Res())
+    async me(request, response) {
+        const data = await this.meService.me(request)
+        return response.json({ data })
     }
 
     @Post('register')
