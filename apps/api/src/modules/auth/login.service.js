@@ -15,6 +15,7 @@ import translate from '../../helpers/translate'
 import AppValidationError from '../../exceptions/AppValidationError'
 
 const DUMMY_PASSWORD_HASH = bcrypt.hashSync('invalid-password', 12)
+const MEMBER_SCOPE = 'member'
 
 @Injectable()
 export class LoginService {
@@ -48,6 +49,7 @@ export class LoginService {
         const token = await this.jwtService.signAsync({
             sub: user.get('id'),
             email: user.get('email'),
+            scopes: [MEMBER_SCOPE],
         })
 
         return {

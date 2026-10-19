@@ -11,9 +11,11 @@ const pages: { id: AppPage; label: string }[] = [
 export function TopBar({
   page,
   onPageChange,
+  email,
 }: {
   page: AppPage
   onPageChange: (page: AppPage) => void
+  email?: string
 }) {
   return (
     <header className="topbar">
@@ -35,15 +37,24 @@ export function TopBar({
       </nav>
       <button type="button" className="avatar-button">
         <AvatarIcon />
-        <span>
-          Avatar
-          <br />
-          Name
-        </span>
+        <span>{email ? <EmailLabel email={email} /> : 'Sign in'}</span>
         <span className="chevron" aria-hidden="true">
           ▾
         </span>
       </button>
     </header>
+  )
+}
+
+function EmailLabel({ email }: { email: string }) {
+  const [local, domain] = email.split('@')
+  if (!domain) {
+    return email
+  }
+  return (
+    <>
+      {local}
+      <br />@{domain}
+    </>
   )
 }

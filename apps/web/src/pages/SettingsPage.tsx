@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { fetchHealth } from '../lib/api'
 
-export function SettingsPage() {
+export function SettingsPage({ email }: { email: string }) {
   const [apiStatus, setApiStatus] = useState('checking')
 
   useEffect(() => {
@@ -15,7 +15,7 @@ export function SettingsPage() {
       <h1>Settings</h1>
       <section className="panel settings-panel">
         <h2>Account</h2>
-        <p>Avatar Name</p>
+        <p>{email}</p>
         <h2>Search modes</h2>
         <ul className="settings-list">
           <li>Web Search — search the internal document index.</li>

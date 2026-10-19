@@ -5,7 +5,7 @@ import createValidationMessage from '../../../helpers/create-validation-message'
 
 export class LoginDto {
     @MaxLength(254, createValidationMessage({ key: 'maxLength' }))
-    @IsEmail({}, createValidationMessage({ key: 'email' }))
+    @IsEmail({ require_tld: false }, createValidationMessage({ key: 'email' }))
     @IsString(createValidationMessage({ key: 'string' }))
     @IsNotEmpty(createValidationMessage({ key: 'required' }))
     email
