@@ -77,6 +77,25 @@ export async function fetchDocuments(token: string): Promise<ApiDocument[]> {
   return body.data
 }
 
+export async function uploadDocument(
+  token: string,
+  file: File,
+): Promise<{ id: string; status: string }> {
+  const payload = new FormData()
+  payload.append('file', file)
+  const response = await fetch('/api/documents', {
+    method: 'POST',
+    headers: { authorization: `Bearer ${token}` },
+    body: payload,
+  })
+  const body = (await response.json()) as Envelope<{ id: string; status: string }> &
+    ErrorEnvelope
+  if (!response.ok) {
+    throw new Error(body.message || 'Upload failed')
+  }
+  return body.data
+}
+
 export async function login(email: string, password: string): Promise<LoginResponse> {
   const response = await fetch('/api/auth/login', {
     method: 'POST',
