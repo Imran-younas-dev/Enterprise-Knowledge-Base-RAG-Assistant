@@ -21,8 +21,8 @@ export function App() {
     <AppShell page={page} onPageChange={setPage} email={session?.user.email}>
       {session ? (
         <>
-          {page === 'dashboard' ? <DashboardPage /> : null}
-          {page === 'documents' ? <DocumentsPage /> : null}
+          {page === 'dashboard' ? <DashboardPage token={session.token} /> : null}
+          {page === 'documents' ? <DocumentsPage token={session.token} /> : null}
           {page === 'settings' ? <SettingsPage email={session.user.email} /> : null}
         </>
       ) : (

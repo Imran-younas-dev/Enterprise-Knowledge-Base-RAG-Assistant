@@ -1,28 +1,55 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   documentChunks,
   references,
   sampleAnswer,
-  sourceDocuments,
   type SearchMode,
+  type SourceDocument,
 } from '../data/sampleKnowledge'
+import { fetchDocuments } from '../lib/api'
+import { toSourceDocument } from '../features/documents/toSourceDocument'
 import { GeneratedAnswer } from '../features/chat/GeneratedAnswer'
 import { References } from '../features/chat/References'
 import { SearchBar } from '../features/chat/SearchBar'
 import { DocumentChunks } from '../features/documents/DocumentChunks'
 import { SourceDocuments } from '../features/documents/SourceDocuments'
 
-export function DashboardPage() {
+export function DashboardPage({ token }: { token: string }) {
   const [query, setQuery] = useState('')
   const [mode, setMode] = useState<SearchMode>('web')
-  const [selectedDocumentId, setSelectedDocumentId] = useState(sourceDocuments[0].id)
+  const [documents, setDocuments] = useState<SourceDocument[]>([])
+  const [selectedDocumentId, setSelectedDocumentId] = useState('')
   const [activeChunkId, setActiveChunkId] = useState<string | null>(documentChunks[0].id)
   const [asked, setAsked] = useState(true)
+  const [listError, setListError] = useState('')
 
-  const shownChunks = useMemo(
-    () => documentChunks.filter((chunk) => chunk.documentId === selectedDocumentId),
-    [selectedDocumentId],
-  )
+  useEffect(() => {
+    let active = true
+    fetchDocuments(token)
+      .then((rows) => {
+        if (!active) {
+          return
+        }
+        const next = rows.map(toSourceDocument)
+        setDocuments(next)
+        setSelectedDocumentId(next[0]?.id ?? '')
+      })
+      .catch((caught: unknown) => {
+        if (!active) {
+          return
+        }
+        const message = caught instanceof Error ? caught.message : 'Could not load documents'
+        setListError(message)
+      })
+    return () => {
+      active = false
+    }
+  }, [token])
+
+  const shownChunks = useMemo(() => {
+    const matched = documentChunks.filter((chunk) => chunk.documentId === selectedDocumentId)
+    return matched.length > 0 ? matched : documentChunks.slice(0, 2)
+  }, [selectedDocumentId])
 
   return (
     <div className="dashboard">
@@ -36,8 +63,9 @@ export function DashboardPage() {
       />
       <div className="workspace">
         <div className="stack">
+          {listError ? <p className="form-error">{listError}</p> : null}
           <SourceDocuments
-            documents={sourceDocuments}
+            documents={documents}
             selectedId={selectedDocumentId}
             onSelect={setSelectedDocumentId}
           />

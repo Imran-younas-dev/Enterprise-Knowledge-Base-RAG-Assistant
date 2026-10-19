@@ -23,7 +23,7 @@ npm install
 npm run dev
 ```
 
-Health: http://localhost:3000/api/health
+Health: http://localhost:6000/api/health
 
 ```bash
 cd apps/web
