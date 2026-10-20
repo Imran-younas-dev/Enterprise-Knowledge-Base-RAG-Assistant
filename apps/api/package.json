@@ -11,6 +11,8 @@
     "lintfix": "eslint src --fix",
     "format": "prettier --write \"src/**/*.js\"",
     "db:check": "babel-node src/scripts/check-database.js",
+    "print:document": "babel-node src/scripts/print-document.js",
+    "write:chunks": "babel-node src/scripts/write-chunks.js",
     "migrate": "sequelize-cli db:migrate",
     "seed": "sequelize-cli db:seed:all",
     "undo": "sequelize-cli db:migrate:undo"

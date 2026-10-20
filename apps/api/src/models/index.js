@@ -2,9 +2,10 @@ import { Sequelize } from 'sequelize-typescript'
 
 import databaseConfig from '../config/database'
 import Document from './Document'
+import DocumentChunk from './DocumentChunk'
 import User from './User'
 
-const models = [User, Document]
+const models = [User, Document, DocumentChunk]
 const env = process.env.NODE_ENV || 'development'
 const config = databaseConfig[env]
 
