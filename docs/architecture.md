@@ -45,6 +45,6 @@ The application retrieves authorized evidence first, then sends that evidence to
 - `documents` — file metadata, storage key, content hash, status
 - `document_chunks` — text, a MySQL `VECTOR` column, page/section, document and version
 
-Embeddings use MySQL 9’s `VECTOR` type. Retrieval orders authorized chunks with `DISTANCE(..., 'COSINE')`. That is an exact scan over the chunks the user may see, which is the right fit for this project. MySQL 8 does not have this type, so the Compose file uses `mysql:9`.
+Embeddings use MySQL 9’s `VECTOR` type when the server is MySQL 9. The migration writes `VECTOR(<size>)` with raw SQL because Sequelize has no `VECTOR` type, and rows are stored with `STRING_TO_VECTOR`. The MySQL server on this machine is 8.0, which has no `VECTOR` type, so the same migration stores the vector as JSON there. Retrieval will order authorized chunks with `DISTANCE(..., 'COSINE')` once the server is MySQL 9. That is an exact scan over the chunks the user may see. The Compose file uses `mysql:9`.
 
 Full product notes remain in `enterprise-rag-assistant-architecture.md` at the repository root.
