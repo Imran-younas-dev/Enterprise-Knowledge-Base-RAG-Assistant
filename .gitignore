@@ -10,3 +10,4 @@ coverage/
 apps/api/dist/
 apps/web/dist/
 apps/api/uploads/
+apps/api/.cache/

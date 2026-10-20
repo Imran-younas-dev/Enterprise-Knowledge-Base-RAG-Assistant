@@ -13,6 +13,7 @@
     "db:check": "babel-node src/scripts/check-database.js",
     "print:document": "babel-node src/scripts/print-document.js",
     "write:chunks": "babel-node src/scripts/write-chunks.js",
+    "embed:chunks": "babel-node src/scripts/embed-chunks.js",
     "migrate": "sequelize-cli db:migrate",
     "seed": "sequelize-cli db:seed:all",
     "undo": "sequelize-cli db:migrate:undo"
@@ -22,6 +23,7 @@
     "@nestjs/core": "^11.1.6",
     "@nestjs/jwt": "^11.0.2",
     "@nestjs/platform-express": "^11.1.6",
+    "@xenova/transformers": "^2.17.2",
     "bcrypt": "^6.0.0",
     "class-validator": "^0.15.1",
     "cloudinary": "^2.11.0",

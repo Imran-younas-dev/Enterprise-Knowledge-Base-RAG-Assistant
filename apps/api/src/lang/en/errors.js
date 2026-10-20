@@ -12,4 +12,5 @@ export default {
     uploadFailed: 'The file could not be stored',
     notSupportedYet: 'Reading PDF and DOCX is not supported yet',
     emptyText: 'This file has no text',
+    embeddingFailed: 'Embeddings could not be created',
 }
