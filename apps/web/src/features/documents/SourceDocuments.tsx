@@ -29,6 +29,9 @@ export function SourceDocuments({
             >
               <FileIcon kind={document.kind} />
               <span className="doc-title">{document.title}</span>
+              <span className="doc-status" title={statusLabel(document)}>
+                {statusLabel(document)}
+              </span>
               <span className="doc-date">{document.dateLabel}</span>
             </button>
           </li>
@@ -36,4 +39,11 @@ export function SourceDocuments({
       </ul>
     </section>
   )
+}
+
+function statusLabel(document: SourceDocument) {
+  if (document.status === 'failed' && document.errorSummary) {
+    return `failed · ${document.errorSummary}`
+  }
+  return document.status || ''
 }

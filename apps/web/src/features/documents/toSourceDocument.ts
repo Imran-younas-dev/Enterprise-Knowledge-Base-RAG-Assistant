@@ -13,6 +13,8 @@ export function toSourceDocument(document: ApiDocument): SourceDocument {
     title: document.title || document.originalFilename,
     dateLabel: dateFormat.format(new Date(document.createdAt)),
     kind: kindFor(document.mimeType, document.originalFilename),
+    status: document.status,
+    errorSummary: document.errorSummary,
   }
 }
 

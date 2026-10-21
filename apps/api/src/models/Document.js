@@ -71,5 +71,9 @@ export default class Document extends AbstractModel {
 
     @AllowNull(true)
     @Column(DataType.STRING)
+    errorCode
+
+    @AllowNull(true)
+    @Column(DataType.STRING)
     errorSummary
 }

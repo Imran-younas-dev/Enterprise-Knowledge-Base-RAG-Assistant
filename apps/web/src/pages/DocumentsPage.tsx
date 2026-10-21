@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { SourceDocument } from '../data/knowledge'
 import { SourceDocuments } from '../features/documents/SourceDocuments'
 import { toSourceDocument } from '../features/documents/toSourceDocument'
-import { fetchDocuments, uploadDocument } from '../lib/api'
+import { fetchDocument, fetchDocuments, uploadDocument } from '../lib/api'
 
 export function DocumentsPage({ token }: { token: string }) {
   const fileInput = useRef<HTMLInputElement>(null)
@@ -33,6 +33,42 @@ export function DocumentsPage({ token }: { token: string }) {
       active = false
     }
   }, [token])
+
+  const waitingIds = documents
+    .filter((document) => document.status === 'queued' || document.status === 'processing')
+    .map((document) => document.id)
+    .join(',')
+
+  useEffect(() => {
+    if (!waitingIds) {
+      return
+    }
+    let active = true
+    const ids = waitingIds.split(',')
+    const timer = setInterval(() => {
+      void Promise.all(ids.map((id) => fetchDocument(token, id)))
+        .then((rows) => {
+          if (!active) {
+            return
+          }
+          setDocuments((current) =>
+            current.map((document) => {
+              const fresh = rows.find((row) => row.id === document.id)
+              return fresh ? toSourceDocument(fresh) : document
+            }),
+          )
+        })
+        .catch(() => {
+          if (!active) {
+            return
+          }
+        })
+    }, 1500)
+    return () => {
+      active = false
+      clearInterval(timer)
+    }
+  }, [token, waitingIds])
 
   async function handleFile(file: File | undefined) {
     if (!file) {
@@ -67,7 +103,7 @@ export function DocumentsPage({ token }: { token: string }) {
       <div className="workspace single">
         <section className="panel upload-panel">
           <h2>Add a document</h2>
-          <p>PDF, DOCX, TXT, and Markdown. The file is stored now. Parsing comes later.</p>
+          <p>PDF, DOCX, TXT, and Markdown. The file is stored, then read in the background.</p>
           <input
             ref={fileInput}
             type="file"

@@ -5,6 +5,8 @@ export type SourceDocument = {
   title: string
   dateLabel: string
   kind: SourceKind
+  status: string
+  errorSummary: string | null
 }
 
 export type DocumentChunk = {

@@ -104,6 +104,7 @@ async function enqueue(documentId) {
         await Document.update(
             {
                 status: 'failed',
+                errorCode: 'ingestionFailed',
                 errorSummary: translate('errors', 'ingestionFailed'),
             },
             { where: { id: documentId } }
