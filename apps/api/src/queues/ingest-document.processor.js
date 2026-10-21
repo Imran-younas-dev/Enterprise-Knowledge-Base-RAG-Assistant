@@ -1,7 +1,7 @@
 import { Process, Processor } from '@nestjs/bull'
 
 /* import models */
-import '../models'
+import { sequelize } from '../models'
 import Document from '../models/Document'
 import DocumentChunk from '../models/DocumentChunk'
 
@@ -18,6 +18,8 @@ const SAFE_KEYS = new Set([
     'embeddingFailed',
     'ingestionFailed',
 ])
+
+const TRANSIENT_CODES = new Set(['embeddingFailed', 'ingestionFailed'])
 
 @Processor('ingestDocument')
 export class IngestDocumentProcessor {
@@ -46,34 +48,68 @@ export class IngestDocumentProcessor {
                 pageNumber: parsed.pageNumber,
             })
 
-            await DocumentChunk.destroy({ where: { documentId } })
-            const rows = await DocumentChunk.bulkCreate(
-                chunks.map((chunk) => ({
-                    documentId,
-                    chunkIndex: chunk.index,
-                    content: chunk.content,
-                    pageNumber: chunk.pageNumber,
-                    sectionTitle: chunk.sectionTitle,
-                    metadata: chunk.metadata,
-                }))
-            )
-
+            const rows = await replaceChunks(documentId, chunks)
             await storeChunkVectors(rows)
             await Document.update(
                 { status: 'ready', errorCode: null, errorSummary: null },
                 { where: { id: documentId } }
             )
         } catch (error) {
+            const code = safeCode(error)
+            if (willRetry(job, code)) {
+                // eslint-disable-next-line no-console
+                console.log(
+                    `ingestDocument retry ${Number(job.attemptsMade || 0) + 1}`
+                )
+                throw error
+            }
+
             await Document.update(
                 {
                     status: 'failed',
-                    errorCode: safeCode(error),
-                    errorSummary: safeSummary(error),
+                    errorCode: code,
+                    errorSummary: safeSummary(code),
                 },
                 { where: { id: documentId } }
             )
+
+            if (TRANSIENT_CODES.has(code)) {
+                throw error
+            }
         }
     }
+}
+
+async function replaceChunks(documentId, chunks) {
+    return sequelize.transaction(async (transaction) => {
+        await DocumentChunk.destroy({
+            where: { documentId },
+            transaction,
+        })
+
+        return DocumentChunk.bulkCreate(
+            chunks.map((chunk) => ({
+                documentId,
+                chunkIndex: chunk.index,
+                content: chunk.content,
+                pageNumber: chunk.pageNumber,
+                sectionTitle: chunk.sectionTitle,
+                metadata: chunk.metadata,
+            })),
+            { transaction }
+        )
+    })
+}
+
+function willRetry(job, code) {
+    if (!TRANSIENT_CODES.has(code)) {
+        return false
+    }
+
+    const attempts = Number(job.opts && job.opts.attempts) || 1
+    const made = Number(job.attemptsMade || 0)
+
+    return made + 1 < attempts
 }
 
 function safeCode(error) {
@@ -88,6 +124,6 @@ function safeCode(error) {
     return 'ingestionFailed'
 }
 
-function safeSummary(error) {
-    return translate('errors', safeCode(error))
+function safeSummary(code) {
+    return translate('errors', code)
 }

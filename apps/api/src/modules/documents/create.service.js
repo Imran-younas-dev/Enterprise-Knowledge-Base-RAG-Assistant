@@ -19,6 +19,8 @@ import translate from '../../helpers/translate'
 /* import exceptions */
 import AppValidationError from '../../exceptions/AppValidationError'
 
+const INGEST_ATTEMPTS = 3
+
 let ingestDocument
 
 @Injectable()
@@ -99,7 +101,13 @@ function queue() {
 
 async function enqueue(documentId) {
     try {
-        await queue().add({ documentId })
+        await queue().add(
+            { documentId },
+            {
+                attempts: INGEST_ATTEMPTS,
+                backoff: { type: 'fixed', delay: 500 },
+            }
+        )
     } catch {
         await Document.update(
             {
