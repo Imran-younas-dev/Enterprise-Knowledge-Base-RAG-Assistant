@@ -1,12 +1,12 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
-  documentChunks,
   references,
   sampleAnswer,
   type SearchMode,
   type SourceDocument,
 } from '../data/sampleKnowledge'
-import { fetchDocuments } from '../lib/api'
+import { fetchDocumentChunks, fetchDocuments, searchPassages } from '../lib/api'
+import { toDocumentChunk } from '../features/documents/toDocumentChunk'
 import { toSourceDocument } from '../features/documents/toSourceDocument'
 import { GeneratedAnswer } from '../features/chat/GeneratedAnswer'
 import { References } from '../features/chat/References'
@@ -19,8 +19,10 @@ export function DashboardPage({ token }: { token: string }) {
   const [mode, setMode] = useState<SearchMode>('web')
   const [documents, setDocuments] = useState<SourceDocument[]>([])
   const [selectedDocumentId, setSelectedDocumentId] = useState('')
-  const [activeChunkId, setActiveChunkId] = useState<string | null>(documentChunks[0].id)
+  const [chunks, setChunks] = useState<ReturnType<typeof toDocumentChunk>[]>([])
+  const [activeChunkId, setActiveChunkId] = useState<string | null>(null)
   const [asked, setAsked] = useState(true)
+  const [thinking, setThinking] = useState(false)
   const [listError, setListError] = useState('')
 
   useEffect(() => {
@@ -32,7 +34,21 @@ export function DashboardPage({ token }: { token: string }) {
         }
         const next = rows.map(toSourceDocument)
         setDocuments(next)
-        setSelectedDocumentId(next[0]?.id ?? '')
+        const firstId = next[0]?.id ?? ''
+        setSelectedDocumentId(firstId)
+        if (firstId) {
+          return fetchDocumentChunks(token, firstId)
+        }
+        return []
+      })
+      .then((rows) => {
+        if (!active || !rows) {
+          return
+        }
+        const nextChunks = rows.map(toDocumentChunk)
+        setChunks(nextChunks)
+        setActiveChunkId(nextChunks[0]?.id ?? null)
+        setThinking(false)
       })
       .catch((caught: unknown) => {
         if (!active) {
@@ -46,10 +62,51 @@ export function DashboardPage({ token }: { token: string }) {
     }
   }, [token])
 
-  const shownChunks = useMemo(() => {
-    const matched = documentChunks.filter((chunk) => chunk.documentId === selectedDocumentId)
-    return matched.length > 0 ? matched : documentChunks.slice(0, 2)
-  }, [selectedDocumentId])
+  async function showDocumentChunks(documentId: string) {
+    setSelectedDocumentId(documentId)
+    setListError('')
+    const rows = await fetchDocumentChunks(token, documentId)
+    const nextChunks = rows.map(toDocumentChunk)
+    setChunks(nextChunks)
+    setActiveChunkId(nextChunks[0]?.id ?? null)
+    setThinking(false)
+  }
+
+  async function showSearch(question: string) {
+    setListError('')
+    const result = await searchPassages(token, { question, mode })
+    const nextChunks = result.chunks.map(toDocumentChunk)
+    setChunks(nextChunks)
+    setActiveChunkId(nextChunks[0]?.id ?? null)
+    setThinking(result.thinking)
+    setAsked(true)
+  }
+
+  async function selectDocument(documentId: string) {
+    try {
+      if (query.trim()) {
+        setSelectedDocumentId(documentId)
+        await showSearch(query.trim())
+        return
+      }
+      await showDocumentChunks(documentId)
+    } catch (caught: unknown) {
+      const message = caught instanceof Error ? caught.message : 'Could not load chunks'
+      setListError(message)
+    }
+  }
+
+  async function submitQuestion() {
+    if (!query.trim()) {
+      return
+    }
+    try {
+      await showSearch(query.trim())
+    } catch (caught: unknown) {
+      const message = caught instanceof Error ? caught.message : 'Search failed'
+      setListError(message)
+    }
+  }
 
   return (
     <div className="dashboard">
@@ -59,7 +116,9 @@ export function DashboardPage({ token }: { token: string }) {
         mode={mode}
         onQueryChange={setQuery}
         onModeChange={setMode}
-        onSubmit={() => setAsked(true)}
+        onSubmit={() => {
+          void submitQuestion()
+        }}
       />
       <div className="workspace">
         <div className="stack">
@@ -67,12 +126,15 @@ export function DashboardPage({ token }: { token: string }) {
           <SourceDocuments
             documents={documents}
             selectedId={selectedDocumentId}
-            onSelect={setSelectedDocumentId}
+            onSelect={(id) => {
+              void selectDocument(id)
+            }}
           />
           <DocumentChunks
-            chunks={shownChunks}
+            chunks={chunks}
             activeChunkId={activeChunkId}
             onSelect={setActiveChunkId}
+            status={thinking ? 'Retrieved passages for this question.' : undefined}
           />
         </div>
         <div className="stack">
@@ -80,7 +142,7 @@ export function DashboardPage({ token }: { token: string }) {
             <GeneratedAnswer
               text={sampleAnswer.text}
               marks={sampleAnswer.marks}
-              onCite={(mark) => setActiveChunkId(mark === '1' ? 'chunk-1' : 'chunk-2')}
+              onCite={() => setActiveChunkId(chunks[0]?.id ?? null)}
             />
           ) : null}
           <References items={references} />

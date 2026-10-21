@@ -96,6 +96,52 @@ export async function uploadDocument(
   return body.data
 }
 
+export type ApiChunk = {
+  id: string
+  documentId: string
+  chunkIndex: number
+  content: string
+  pageNumber: number | null
+  sectionTitle: string | null
+  originalFilename: string
+  distance?: number
+}
+
+export type SearchResult = {
+  thinking: boolean
+  chunks: ApiChunk[]
+}
+
+export async function fetchDocumentChunks(token: string, documentId: string): Promise<ApiChunk[]> {
+  const response = await fetch(`/api/documents/${documentId}/chunks`, {
+    headers: { authorization: `Bearer ${token}` },
+  })
+  const body = (await response.json()) as Envelope<ApiChunk[]> & ErrorEnvelope
+  if (!response.ok) {
+    throw new Error(body.message || 'Could not load chunks')
+  }
+  return body.data
+}
+
+export async function searchPassages(
+  token: string,
+  input: { question: string; mode: string },
+): Promise<SearchResult> {
+  const response = await fetch('/api/retrieval/search', {
+    method: 'POST',
+    headers: {
+      authorization: `Bearer ${token}`,
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify(input),
+  })
+  const body = (await response.json()) as Envelope<SearchResult> & ErrorEnvelope
+  if (!response.ok) {
+    throw new Error(body.message || 'Search failed')
+  }
+  return body.data
+}
+
 export async function login(email: string, password: string): Promise<LoginResponse> {
   const response = await fetch('/api/auth/login', {
     method: 'POST',
