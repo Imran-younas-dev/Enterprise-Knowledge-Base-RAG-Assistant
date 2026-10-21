@@ -2,12 +2,14 @@ import crypto from 'crypto'
 import path from 'path'
 
 import { Injectable } from '@nestjs/common'
+import Queue from 'bull'
 
 /* import models */
 import '../../models'
 import Document from '../../models/Document'
 
 /* import config */
+import bullConfig from '../../config/bull'
 import uploads from '../../config/uploads'
 
 /* import helpers */
@@ -16,6 +18,8 @@ import translate from '../../helpers/translate'
 
 /* import exceptions */
 import AppValidationError from '../../exceptions/AppValidationError'
+
+let ingestDocument
 
 @Injectable()
 export class CreateService {
@@ -55,8 +59,9 @@ export class CreateService {
         const storageKey = `rag/${id}`
         const stored = await storeFile(file.buffer, storageKey)
 
+        let row
         try {
-            const row = await Document.create({
+            row = await Document.create({
                 id,
                 ownerId: request.user.id,
                 title: originalFilename,
@@ -70,15 +75,43 @@ export class CreateService {
                     .digest('hex'),
                 status: 'queued',
             })
-
-            return {
-                id: row.get('id'),
-                status: row.get('status'),
-            }
         } catch (error) {
             await stored.remove()
             throw error
         }
+
+        await enqueue(row.get('id'))
+
+        return {
+            id: row.get('id'),
+            status: row.get('status'),
+        }
+    }
+}
+
+function queue() {
+    if (!ingestDocument) {
+        ingestDocument = new Queue('ingestDocument', bullConfig)
+    }
+
+    return ingestDocument
+}
+
+async function enqueue(documentId) {
+    try {
+        await queue().add({ documentId })
+    } catch {
+        await Document.update(
+            {
+                status: 'failed',
+                errorSummary: translate('errors', 'ingestionFailed'),
+            },
+            { where: { id: documentId } }
+        )
+        throw new AppValidationError(
+            translate('errors', 'ingestionFailed'),
+            502
+        )
     }
 }
 
