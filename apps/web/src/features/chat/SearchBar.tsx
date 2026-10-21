@@ -1,6 +1,6 @@
 import { FormEvent } from 'react'
 import { BrainIcon, DeepSearchIcon, GlobeIcon, SearchIcon } from '../../components/Icons'
-import { searchModes, type SearchMode } from '../../data/sampleKnowledge'
+import { searchModes, type SearchMode } from '../../data/knowledge'
 
 const modeIcons = {
   web: GlobeIcon,

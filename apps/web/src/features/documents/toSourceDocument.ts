@@ -1,4 +1,4 @@
-import type { SourceDocument, SourceKind } from '../../data/sampleKnowledge'
+import type { SourceDocument, SourceKind } from '../../data/knowledge'
 import type { ApiDocument } from '../../lib/api'
 
 const dateFormat = new Intl.DateTimeFormat('en-US', {
@@ -16,7 +16,7 @@ export function toSourceDocument(document: ApiDocument): SourceDocument {
   }
 }
 
-function kindFor(mimeType: string, filename: string): SourceKind {
+export function kindFor(mimeType: string, filename: string): SourceKind {
   const name = filename.toLowerCase()
   if (mimeType.includes('pdf') || name.endsWith('.pdf')) {
     return 'pdf'

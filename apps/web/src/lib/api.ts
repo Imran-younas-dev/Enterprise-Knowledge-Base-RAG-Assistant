@@ -123,6 +123,44 @@ export async function fetchDocumentChunks(token: string, documentId: string): Pr
   return body.data
 }
 
+export type ApiCitation = {
+  id: string
+  documentId: string
+  title: string
+  page: number | null
+  quote: string
+}
+
+export type AskResult = {
+  answer: string
+  insufficientEvidence: boolean
+  citations: ApiCitation[]
+  chunks: ApiChunk[]
+  metadata: {
+    retrievalMs: number
+    modelMs: number
+  }
+}
+
+export async function askQuestion(
+  token: string,
+  input: { question: string; mode: string },
+): Promise<AskResult> {
+  const response = await fetch('/api/chat/ask', {
+    method: 'POST',
+    headers: {
+      authorization: `Bearer ${token}`,
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify(input),
+  })
+  const body = (await response.json()) as Envelope<AskResult> & ErrorEnvelope
+  if (!response.ok) {
+    throw new Error(body.message || 'The question could not be answered')
+  }
+  return body.data
+}
+
 export async function searchPassages(
   token: string,
   input: { question: string; mode: string },

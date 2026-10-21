@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import type { SourceDocument } from '../data/sampleKnowledge'
+import type { SourceDocument } from '../data/knowledge'
 import { SourceDocuments } from '../features/documents/SourceDocuments'
 import { toSourceDocument } from '../features/documents/toSourceDocument'
 import { fetchDocuments, uploadDocument } from '../lib/api'
