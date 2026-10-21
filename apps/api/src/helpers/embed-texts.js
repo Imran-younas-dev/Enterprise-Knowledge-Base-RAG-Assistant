@@ -8,7 +8,7 @@ function dimensions() {
     const size = Number(process.env.EMBEDDING_DIMENSIONS || 384)
 
     if (!Number.isInteger(size) || size < 1) {
-        throw new Error('embedding-provider-failed')
+        throw providerError()
     }
 
     return size
@@ -48,7 +48,7 @@ export default async function embedTexts(texts) {
     const size = dimensions()
 
     if (provider !== 'local') {
-        throw new Error('embedding-provider-failed')
+        throw providerError()
     }
 
     const extractor = await localExtractor(model)
@@ -64,7 +64,7 @@ export default async function embedTexts(texts) {
 
         for (const vector of rows) {
             if (!Array.isArray(vector) || vector.length !== size) {
-                throw new Error('embedding-provider-failed')
+                throw providerError()
             }
 
             vectors.push(vector)
@@ -72,4 +72,10 @@ export default async function embedTexts(texts) {
     }
 
     return vectors
+}
+
+function providerError() {
+    const error = new Error('embedding-provider-failed')
+    error.key = 'embeddingFailed'
+    return error
 }
