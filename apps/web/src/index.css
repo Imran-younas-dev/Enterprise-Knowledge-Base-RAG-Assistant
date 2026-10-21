@@ -253,9 +253,18 @@ button {
   font-size: 14px;
 }
 
-.doc-date {
+.doc-date,
+.doc-status {
   color: #6b7280;
   font-size: 13px;
+}
+
+.doc-status {
+  max-width: 180px;
+  overflow: hidden;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .doc-row.is-selected {

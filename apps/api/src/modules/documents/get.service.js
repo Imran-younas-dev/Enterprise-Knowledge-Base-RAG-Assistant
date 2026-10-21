@@ -24,6 +24,8 @@ export function presentDocument(document) {
         mimeType: document.get('mimeType'),
         fileSizeBytes: document.get('fileSizeBytes'),
         status: document.get('status'),
+        errorCode: document.get('errorCode'),
+        errorSummary: document.get('errorSummary'),
         createdAt: document.get('createdAt'),
     }
 }

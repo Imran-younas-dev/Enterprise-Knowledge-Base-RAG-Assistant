@@ -3,16 +3,18 @@ import type { DocumentChunk, ReferenceItem, SourceDocument } from './knowledge'
 export type { DocumentChunk, ReferenceItem, SearchMode, SourceDocument, SourceKind } from './knowledge'
 
 export const sourceDocuments: SourceDocument[] = [
-  { id: 'phoenix', title: 'Project_Phoenix.pdf', dateLabel: 'Mar 3, 2024', kind: 'pdf' },
-  { id: 'market', title: 'Market_Report.doc', dateLabel: 'Dec 4, 2024', kind: 'doc' },
+  { id: 'phoenix', title: 'Project_Phoenix.pdf', dateLabel: 'Mar 3, 2024', kind: 'pdf', status: 'ready', errorSummary: null },
+  { id: 'market', title: 'Market_Report.doc', dateLabel: 'Dec 4, 2024', kind: 'doc', status: 'ready', errorSummary: null },
   {
     id: 'aprm',
     title: 'URL: https://www.aprm.com/...',
     dateLabel: 'Dec 2024',
     kind: 'link',
+    status: 'ready',
+    errorSummary: null,
   },
-  { id: 'market-url', title: 'URL: Market_Phoenix.pdf', dateLabel: 'Dec 2024', kind: 'sheet' },
-  { id: 'report', title: 'URL: Project report.pdf', dateLabel: 'May 2024', kind: 'report' },
+  { id: 'market-url', title: 'URL: Market_Phoenix.pdf', dateLabel: 'Dec 2024', kind: 'sheet', status: 'ready', errorSummary: null },
+  { id: 'report', title: 'URL: Project report.pdf', dateLabel: 'May 2024', kind: 'report', status: 'ready', errorSummary: null },
 ]
 
 export const documentChunks: DocumentChunk[] = [

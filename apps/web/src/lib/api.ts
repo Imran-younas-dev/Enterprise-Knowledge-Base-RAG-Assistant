@@ -63,6 +63,8 @@ export type ApiDocument = {
   mimeType: string
   fileSizeBytes: number
   status: string
+  errorCode: string | null
+  errorSummary: string | null
   createdAt: string
 }
 
@@ -73,6 +75,17 @@ export async function fetchDocuments(token: string): Promise<ApiDocument[]> {
   const body = (await response.json()) as Envelope<ApiDocument[]> & ErrorEnvelope
   if (!response.ok) {
     throw new Error(body.message || 'Could not load documents')
+  }
+  return body.data
+}
+
+export async function fetchDocument(token: string, documentId: string): Promise<ApiDocument> {
+  const response = await fetch(`/api/documents/${documentId}`, {
+    headers: { authorization: `Bearer ${token}` },
+  })
+  const body = (await response.json()) as Envelope<ApiDocument> & ErrorEnvelope
+  if (!response.ok) {
+    throw new Error(body.message || 'Could not load the document')
   }
   return body.data
 }

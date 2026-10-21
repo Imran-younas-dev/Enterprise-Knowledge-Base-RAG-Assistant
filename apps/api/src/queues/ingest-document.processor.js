@@ -32,7 +32,7 @@ export class IngestDocumentProcessor {
 
         try {
             await Document.update(
-                { status: 'processing', errorSummary: null },
+                { status: 'processing', errorCode: null, errorSummary: null },
                 { where: { id: documentId } }
             )
 
@@ -60,13 +60,14 @@ export class IngestDocumentProcessor {
 
             await storeChunkVectors(rows)
             await Document.update(
-                { status: 'ready', errorSummary: null },
+                { status: 'ready', errorCode: null, errorSummary: null },
                 { where: { id: documentId } }
             )
         } catch (error) {
             await Document.update(
                 {
                     status: 'failed',
+                    errorCode: safeCode(error),
                     errorSummary: safeSummary(error),
                 },
                 { where: { id: documentId } }
@@ -75,14 +76,18 @@ export class IngestDocumentProcessor {
     }
 }
 
-function safeSummary(error) {
+function safeCode(error) {
     if (error && SAFE_KEYS.has(error.key)) {
-        return translate('errors', error.key)
+        return error.key
     }
 
     if (error && error.message === 'embedding-provider-failed') {
-        return translate('errors', 'embeddingFailed')
+        return 'embeddingFailed'
     }
 
-    return translate('errors', 'ingestionFailed')
+    return 'ingestionFailed'
+}
+
+function safeSummary(error) {
+    return translate('errors', safeCode(error))
 }
