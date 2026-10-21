@@ -1,5 +1,5 @@
 import { FileIcon, MoreIcon } from '../../components/Icons'
-import type { SourceDocument } from '../../data/sampleKnowledge'
+import type { SourceDocument } from '../../data/knowledge'
 
 export function SourceDocuments({
   documents,

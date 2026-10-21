@@ -51,17 +51,37 @@ export class AskService {
         // eslint-disable-next-line no-console
         console.log(`retrievalMs=${retrievalMs} modelMs=${modelMs}`)
 
+        const citedIds = insufficientEvidence ? [] : citations
+
         return {
             answer: insufficientEvidence
                 ? INSUFFICIENT_ANSWER
                 : stripUnknownCitations(completed.answer, retrievalIds),
             insufficientEvidence,
-            citations: insufficientEvidence ? [] : citations,
+            citations: citedIds.map((id) =>
+                presentCitation(id, retrieved.chunks)
+            ),
+            chunks: retrieved.chunks,
             metadata: {
                 retrievalMs,
                 modelMs,
             },
         }
+    }
+}
+
+function presentCitation(id, chunks) {
+    const chunk = chunks.find((item) => item.id === id)
+    const quote = String(chunk.content || '')
+        .replace(/\s+/g, ' ')
+        .trim()
+
+    return {
+        id,
+        documentId: chunk.documentId,
+        title: chunk.originalFilename,
+        page: chunk.pageNumber,
+        quote: quote.length > 180 ? `${quote.slice(0, 177)}...` : quote,
     }
 }
 

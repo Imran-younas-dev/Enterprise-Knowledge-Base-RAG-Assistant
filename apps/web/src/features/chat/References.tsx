@@ -1,7 +1,13 @@
 import { FileIcon } from '../../components/Icons'
-import type { ReferenceItem } from '../../data/sampleKnowledge'
+import type { ReferenceItem } from '../../data/knowledge'
 
-export function References({ items }: { items: ReferenceItem[] }) {
+export function References({
+  items,
+  onSelect,
+}: {
+  items: ReferenceItem[]
+  onSelect?: (id: string) => void
+}) {
   return (
     <section className="references">
       <h2>References</h2>
@@ -12,7 +18,13 @@ export function References({ items }: { items: ReferenceItem[] }) {
             <p>
               <span>{item.title}</span>
               {item.detail ? <span className="ref-link">{item.detail}</span> : null}{' '}
-              <strong>{item.marks}</strong>
+              {onSelect ? (
+                <button type="button" className="cite" onClick={() => onSelect(item.id)}>
+                  {item.marks}
+                </button>
+              ) : (
+                <strong>{item.marks}</strong>
+              )}
             </p>
           </li>
         ))}

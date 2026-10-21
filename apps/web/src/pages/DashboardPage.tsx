@@ -1,13 +1,8 @@
 import { useEffect, useState } from 'react'
-import {
-  references,
-  sampleAnswer,
-  type SearchMode,
-  type SourceDocument,
-} from '../data/sampleKnowledge'
-import { fetchDocumentChunks, fetchDocuments, searchPassages } from '../lib/api'
+import type { ReferenceItem, SearchMode, SourceDocument } from '../data/knowledge'
+import { askQuestion, fetchDocumentChunks, fetchDocuments, type ApiCitation } from '../lib/api'
 import { toDocumentChunk } from '../features/documents/toDocumentChunk'
-import { toSourceDocument } from '../features/documents/toSourceDocument'
+import { kindFor, toSourceDocument } from '../features/documents/toSourceDocument'
 import { GeneratedAnswer } from '../features/chat/GeneratedAnswer'
 import { References } from '../features/chat/References'
 import { SearchBar } from '../features/chat/SearchBar'
@@ -21,8 +16,9 @@ export function DashboardPage({ token }: { token: string }) {
   const [selectedDocumentId, setSelectedDocumentId] = useState('')
   const [chunks, setChunks] = useState<ReturnType<typeof toDocumentChunk>[]>([])
   const [activeChunkId, setActiveChunkId] = useState<string | null>(null)
-  const [asked, setAsked] = useState(true)
-  const [thinking, setThinking] = useState(false)
+  const [answer, setAnswer] = useState('')
+  const [citations, setCitations] = useState<ApiCitation[]>([])
+  const [asked, setAsked] = useState(false)
   const [listError, setListError] = useState('')
 
   useEffect(() => {
@@ -48,7 +44,6 @@ export function DashboardPage({ token }: { token: string }) {
         const nextChunks = rows.map(toDocumentChunk)
         setChunks(nextChunks)
         setActiveChunkId(nextChunks[0]?.id ?? null)
-        setThinking(false)
       })
       .catch((caught: unknown) => {
         if (!active) {
@@ -62,6 +57,14 @@ export function DashboardPage({ token }: { token: string }) {
     }
   }, [token])
 
+  function highlightChunk(chunkId: string) {
+    const citation = citations.find((item) => item.id === chunkId)
+    setActiveChunkId(chunkId)
+    if (citation) {
+      setSelectedDocumentId(citation.documentId)
+    }
+  }
+
   async function showDocumentChunks(documentId: string) {
     setSelectedDocumentId(documentId)
     setListError('')
@@ -69,24 +72,28 @@ export function DashboardPage({ token }: { token: string }) {
     const nextChunks = rows.map(toDocumentChunk)
     setChunks(nextChunks)
     setActiveChunkId(nextChunks[0]?.id ?? null)
-    setThinking(false)
   }
 
-  async function showSearch(question: string) {
+  async function showAnswer(question: string, searchMode: SearchMode) {
     setListError('')
-    const result = await searchPassages(token, { question, mode })
+    const result = await askQuestion(token, { question, mode: searchMode })
     const nextChunks = result.chunks.map(toDocumentChunk)
+    const firstCitation = result.citations[0]
     setChunks(nextChunks)
-    setActiveChunkId(nextChunks[0]?.id ?? null)
-    setThinking(result.thinking)
+    setCitations(result.citations)
+    setAnswer(visibleAnswer(result.answer))
     setAsked(true)
+    setActiveChunkId(firstCitation?.id ?? nextChunks[0]?.id ?? null)
+    if (firstCitation) {
+      setSelectedDocumentId(firstCitation.documentId)
+    }
   }
 
   async function selectDocument(documentId: string) {
     try {
       if (query.trim()) {
         setSelectedDocumentId(documentId)
-        await showSearch(query.trim())
+        await showAnswer(query.trim(), mode)
         return
       }
       await showDocumentChunks(documentId)
@@ -101,12 +108,23 @@ export function DashboardPage({ token }: { token: string }) {
       return
     }
     try {
-      await showSearch(query.trim())
+      await showAnswer(query.trim(), mode)
     } catch (caught: unknown) {
-      const message = caught instanceof Error ? caught.message : 'Search failed'
+      const message = caught instanceof Error ? caught.message : 'The question could not be answered'
       setListError(message)
     }
   }
+
+  const references = citations.map(toReference)
+  const thinkingLayout = mode === 'thinking' && asked
+  const chunkPanel = (
+    <DocumentChunks
+      chunks={chunks}
+      activeChunkId={activeChunkId}
+      onSelect={highlightChunk}
+      status={thinkingLayout ? 'Retrieved passages for this question.' : undefined}
+    />
+  )
 
   return (
     <div className="dashboard">
@@ -130,24 +148,45 @@ export function DashboardPage({ token }: { token: string }) {
               void selectDocument(id)
             }}
           />
-          <DocumentChunks
-            chunks={chunks}
-            activeChunkId={activeChunkId}
-            onSelect={setActiveChunkId}
-            status={thinking ? 'Retrieved passages for this question.' : undefined}
-          />
+          {thinkingLayout ? null : chunkPanel}
         </div>
         <div className="stack">
+          {thinkingLayout ? chunkPanel : null}
           {asked ? (
             <GeneratedAnswer
-              text={sampleAnswer.text}
-              marks={sampleAnswer.marks}
-              onCite={() => setActiveChunkId(chunks[0]?.id ?? null)}
+              text={answer}
+              marks={citations.map((_, index) => String(index + 1))}
+              onCite={(mark) => {
+                const citation = citations[Number(mark) - 1]
+                if (citation) {
+                  highlightChunk(citation.id)
+                }
+              }}
             />
           ) : null}
-          <References items={references} />
+          <References
+            items={references}
+            onSelect={(id) => {
+              highlightChunk(id)
+            }}
+          />
         </div>
       </div>
     </div>
   )
+}
+
+function visibleAnswer(answer: string) {
+  return answer.replace(/\s*\[[0-9a-f-]{36}\]/gi, '').trim()
+}
+
+function toReference(citation: ApiCitation, index: number): ReferenceItem {
+  const page = citation.page ?? 1
+  return {
+    id: citation.id,
+    kind: kindFor('', citation.title),
+    title: `${citation.title}, p. ${page}`,
+    detail: citation.quote,
+    marks: `[${index + 1}]`,
+  }
 }

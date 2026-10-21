@@ -1,5 +1,5 @@
 import { MoreIcon } from '../../components/Icons'
-import type { DocumentChunk } from '../../data/sampleKnowledge'
+import type { DocumentChunk } from '../../data/knowledge'
 
 export function DocumentChunks({
   chunks,

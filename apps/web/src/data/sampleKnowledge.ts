@@ -1,27 +1,6 @@
-export type SourceKind = 'pdf' | 'doc' | 'link' | 'sheet' | 'report'
+import type { DocumentChunk, ReferenceItem, SourceDocument } from './knowledge'
 
-export type SourceDocument = {
-  id: string
-  title: string
-  dateLabel: string
-  kind: SourceKind
-}
-
-export type DocumentChunk = {
-  id: string
-  documentId: string
-  label: string
-  excerpt: string
-  sourceLabel: string
-}
-
-export type ReferenceItem = {
-  id: string
-  kind: SourceKind
-  title: string
-  detail: string
-  marks: string
-}
+export type { DocumentChunk, ReferenceItem, SearchMode, SourceDocument, SourceKind } from './knowledge'
 
 export const sourceDocuments: SourceDocument[] = [
   { id: 'phoenix', title: 'Project_Phoenix.pdf', dateLabel: 'Mar 3, 2024', kind: 'pdf' },
@@ -92,10 +71,4 @@ export const references: ReferenceItem[] = [
   },
 ]
 
-export const searchModes = [
-  { id: 'web', label: 'Web Search' },
-  { id: 'thinking', label: 'Thinking' },
-  { id: 'deep', label: 'Deep Search' },
-] as const
-
-export type SearchMode = (typeof searchModes)[number]['id']
+export { searchModes } from './knowledge'

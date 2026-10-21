@@ -1,4 +1,4 @@
-import type { DocumentChunk } from '../../data/sampleKnowledge'
+import type { DocumentChunk } from '../../data/knowledge'
 import type { ApiChunk } from '../../lib/api'
 
 export function toDocumentChunk(chunk: ApiChunk): DocumentChunk {
