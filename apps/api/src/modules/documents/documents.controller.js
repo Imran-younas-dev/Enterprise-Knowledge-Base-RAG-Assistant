@@ -12,6 +12,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express'
 
 /* import services */
+import { ChunksService } from './chunks.service'
 import { CreateService } from './create.service'
 import { GetService } from './get.service'
 import { ViewService } from './view.service'
@@ -33,6 +34,7 @@ export class DocumentsController {
         this.getService = new GetService()
         this.viewService = new ViewService()
         this.createService = new CreateService()
+        this.chunksService = new ChunksService()
     }
 
     @Post()
@@ -55,6 +57,15 @@ export class DocumentsController {
     @Bind(Req(), Res())
     async get(request, response) {
         const data = await this.getService.get(request)
+        return response.json({ data })
+    }
+
+    @Get(':id/chunks')
+    @CheckScope(['member'])
+    @UseGuards(AuthGuard, CheckScopeGuard)
+    @Bind(Req(), Res())
+    async chunks(request, response) {
+        const data = await this.chunksService.chunks(request)
         return response.json({ data })
     }
 
