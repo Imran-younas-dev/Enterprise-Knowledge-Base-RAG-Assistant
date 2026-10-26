@@ -1,6 +1,7 @@
 import {
     Bind,
     Controller,
+    Delete,
     Dependencies,
     Get,
     Post,
@@ -15,6 +16,8 @@ import { FileInterceptor } from '@nestjs/platform-express'
 import { ChunksService } from './chunks.service'
 import { CreateService } from './create.service'
 import { GetService } from './get.service'
+import { RemoveService } from './remove.service'
+import { ReprocessService } from './reprocess.service'
 import { ViewService } from './view.service'
 
 /* import guards */
@@ -35,6 +38,8 @@ export class DocumentsController {
         this.viewService = new ViewService()
         this.createService = new CreateService()
         this.chunksService = new ChunksService()
+        this.reprocessService = new ReprocessService()
+        this.removeService = new RemoveService()
     }
 
     @Post()
@@ -66,6 +71,24 @@ export class DocumentsController {
     @Bind(Req(), Res())
     async chunks(request, response) {
         const data = await this.chunksService.chunks(request)
+        return response.json({ data })
+    }
+
+    @Post(':id/reprocess')
+    @CheckScope(['member'])
+    @UseGuards(AuthGuard, CheckScopeGuard)
+    @Bind(Req(), Res())
+    async reprocess(request, response) {
+        const data = await this.reprocessService.reprocess(request)
+        return response.status(202).json({ data })
+    }
+
+    @Delete(':id')
+    @CheckScope(['member'])
+    @UseGuards(AuthGuard, CheckScopeGuard)
+    @Bind(Req(), Res())
+    async remove(request, response) {
+        const data = await this.removeService.remove(request)
         return response.json({ data })
     }
 

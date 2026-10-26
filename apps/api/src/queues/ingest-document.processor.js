@@ -1,4 +1,5 @@
 import { Process, Processor } from '@nestjs/bull'
+import { Op } from 'sequelize'
 
 /* import models */
 import { sequelize } from '../models'
@@ -28,15 +29,24 @@ export class IngestDocumentProcessor {
         const documentId = job.data.documentId
         const document = await Document.findByPk(documentId)
 
-        if (!document) {
+        if (!document || isClosed(document.get('status'))) {
             return
         }
 
         try {
-            await Document.update(
+            const [started] = await Document.update(
                 { status: 'processing', errorCode: null, errorSummary: null },
-                { where: { id: documentId } }
+                {
+                    where: {
+                        id: documentId,
+                        status: { [Op.notIn]: ['deleted', 'deleting'] },
+                    },
+                }
             )
+
+            if (!started) {
+                return
+            }
 
             const buffer = await loadUpload(document.get('storageKey'))
             const parsed = parseDocument({
@@ -48,11 +58,16 @@ export class IngestDocumentProcessor {
                 pageNumber: parsed.pageNumber,
             })
 
+            const current = await Document.findByPk(documentId)
+            if (!current || isClosed(current.get('status'))) {
+                return
+            }
+
             const rows = await replaceChunks(documentId, chunks)
             await storeChunkVectors(rows)
             await Document.update(
                 { status: 'ready', errorCode: null, errorSummary: null },
-                { where: { id: documentId } }
+                { where: { id: documentId, status: 'processing' } }
             )
         } catch (error) {
             const code = safeCode(error)
@@ -70,7 +85,12 @@ export class IngestDocumentProcessor {
                     errorCode: code,
                     errorSummary: safeSummary(code),
                 },
-                { where: { id: documentId } }
+                {
+                    where: {
+                        id: documentId,
+                        status: { [Op.notIn]: ['deleted', 'deleting'] },
+                    },
+                }
             )
 
             if (TRANSIENT_CODES.has(code)) {
@@ -99,6 +119,10 @@ async function replaceChunks(documentId, chunks) {
             { transaction }
         )
     })
+}
+
+function isClosed(status) {
+    return status === 'deleted' || status === 'deleting'
 }
 
 function willRetry(job, code) {

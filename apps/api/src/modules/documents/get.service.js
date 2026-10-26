@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common'
+import { Op } from 'sequelize'
 
 /* import models */
 import '../../models'
@@ -8,7 +9,10 @@ import Document from '../../models/Document'
 export class GetService {
     async get(request) {
         const rows = await Document.findAll({
-            where: { ownerId: request.user.id },
+            where: {
+                ownerId: request.user.id,
+                status: { [Op.ne]: 'deleted' },
+            },
             order: [['createdAt', 'DESC']],
         })
 

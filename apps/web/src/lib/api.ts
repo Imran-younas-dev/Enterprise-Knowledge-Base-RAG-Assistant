@@ -90,6 +90,38 @@ export async function fetchDocument(token: string, documentId: string): Promise<
   return body.data
 }
 
+export async function reprocessDocument(
+  token: string,
+  documentId: string,
+): Promise<{ id: string; status: string }> {
+  const response = await fetch(`/api/documents/${documentId}/reprocess`, {
+    method: 'POST',
+    headers: { authorization: `Bearer ${token}` },
+  })
+  const body = (await response.json()) as Envelope<{ id: string; status: string }> &
+    ErrorEnvelope
+  if (!response.ok) {
+    throw new Error(body.message || 'Could not reprocess the document')
+  }
+  return body.data
+}
+
+export async function deleteDocument(
+  token: string,
+  documentId: string,
+): Promise<{ id: string; status: string }> {
+  const response = await fetch(`/api/documents/${documentId}`, {
+    method: 'DELETE',
+    headers: { authorization: `Bearer ${token}` },
+  })
+  const body = (await response.json()) as Envelope<{ id: string; status: string }> &
+    ErrorEnvelope
+  if (!response.ok) {
+    throw new Error(body.message || 'Could not delete the document')
+  }
+  return body.data
+}
+
 export async function uploadDocument(
   token: string,
   file: File,
