@@ -181,11 +181,12 @@ function visibleAnswer(answer: string) {
 }
 
 function toReference(citation: ApiCitation, index: number): ReferenceItem {
-  const page = citation.page ?? 1
+  const title =
+    citation.page != null ? `${citation.title}, p. ${citation.page}` : citation.title
   return {
     id: citation.id,
     kind: kindFor('', citation.title),
-    title: `${citation.title}, p. ${page}`,
+    title,
     detail: citation.quote,
     marks: `[${index + 1}]`,
   }

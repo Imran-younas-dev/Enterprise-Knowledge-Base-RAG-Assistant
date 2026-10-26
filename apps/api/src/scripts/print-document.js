@@ -11,17 +11,23 @@ if (!filePath) {
     process.exit(1)
 }
 
-try {
-    const parsed = parseDocument({
-        filename: path.basename(filePath),
-        buffer: fs.readFileSync(filePath),
-    })
-    // eslint-disable-next-line no-console
-    console.log(`page ${parsed.pageNumber}`)
-    // eslint-disable-next-line no-console
-    console.log(parsed.text)
-} catch (error) {
-    // eslint-disable-next-line no-console
-    console.error(error.key || error.message)
-    process.exit(1)
+async function main() {
+    try {
+        const parsed = await parseDocument({
+            filename: path.basename(filePath),
+            buffer: fs.readFileSync(filePath),
+        })
+        for (const page of parsed.pages) {
+            // eslint-disable-next-line no-console
+            console.log(`page ${page.pageNumber}`)
+            // eslint-disable-next-line no-console
+            console.log(page.text)
+        }
+    } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error(error.key || error.message)
+        process.exit(1)
+    }
 }
+
+main()
