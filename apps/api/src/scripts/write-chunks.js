@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 
-import chunkText from '../helpers/chunk-text'
+import { chunkPages } from '../helpers/chunk-text'
 import parseDocument from '../helpers/parse-document'
 import { sequelize } from '../models'
 import DocumentChunk from '../models/DocumentChunk'
@@ -19,14 +19,11 @@ if (!filePath) {
 }
 
 async function main() {
-    const parsed = parseDocument({
+    const parsed = await parseDocument({
         filename: path.basename(filePath),
         buffer: fs.readFileSync(filePath),
     })
-    const chunks = chunkText({
-        text: parsed.text,
-        pageNumber: parsed.pageNumber,
-    })
+    const chunks = chunkPages(parsed.pages)
 
     await DocumentChunk.destroy({ where: { documentId } })
     await DocumentChunk.bulkCreate(

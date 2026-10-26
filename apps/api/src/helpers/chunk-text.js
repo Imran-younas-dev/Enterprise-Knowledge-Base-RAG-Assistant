@@ -6,6 +6,25 @@
 export const CHUNK_SIZE = 500
 export const CHUNK_OVERLAP = 50
 
+export function chunkPages(pages) {
+    const chunks = []
+
+    for (const page of pages) {
+        const pageChunks = chunkText({
+            text: page.text,
+            pageNumber: page.pageNumber,
+        })
+        for (const chunk of pageChunks) {
+            chunks.push({
+                ...chunk,
+                index: chunks.length,
+            })
+        }
+    }
+
+    return chunks
+}
+
 export default function chunkText({
     text,
     pageNumber = null,

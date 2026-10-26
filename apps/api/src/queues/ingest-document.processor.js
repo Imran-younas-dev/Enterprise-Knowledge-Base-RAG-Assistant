@@ -7,7 +7,7 @@ import Document from '../models/Document'
 import DocumentChunk from '../models/DocumentChunk'
 
 /* import helpers */
-import chunkText from '../helpers/chunk-text'
+import { chunkPages } from '../helpers/chunk-text'
 import loadUpload from '../helpers/load-upload'
 import parseDocument from '../helpers/parse-document'
 import storeChunkVectors from '../helpers/store-chunk-vectors'
@@ -49,14 +49,11 @@ export class IngestDocumentProcessor {
             }
 
             const buffer = await loadUpload(document.get('storageKey'))
-            const parsed = parseDocument({
+            const parsed = await parseDocument({
                 filename: document.get('originalFilename'),
                 buffer,
             })
-            const chunks = chunkText({
-                text: parsed.text,
-                pageNumber: parsed.pageNumber,
-            })
+            const chunks = chunkPages(parsed.pages)
 
             const current = await Document.findByPk(documentId)
             if (!current || isClosed(current.get('status'))) {
