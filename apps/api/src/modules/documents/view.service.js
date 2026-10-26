@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common'
+import { Op } from 'sequelize'
 
 /* import models */
 import '../../models'
@@ -20,6 +21,7 @@ export class ViewService {
             where: {
                 id: request.params.id,
                 ownerId: request.user.id,
+                status: { [Op.ne]: 'deleted' },
             },
         })
 

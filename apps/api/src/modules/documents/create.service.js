@@ -2,26 +2,21 @@ import crypto from 'crypto'
 import path from 'path'
 
 import { Injectable } from '@nestjs/common'
-import Queue from 'bull'
 
 /* import models */
 import '../../models'
 import Document from '../../models/Document'
 
 /* import config */
-import bullConfig from '../../config/bull'
 import uploads from '../../config/uploads'
 
 /* import helpers */
+import enqueueIngest from '../../helpers/enqueue-ingest'
 import storeUpload from '../../helpers/store-upload'
 import translate from '../../helpers/translate'
 
 /* import exceptions */
 import AppValidationError from '../../exceptions/AppValidationError'
-
-const INGEST_ATTEMPTS = 3
-
-let ingestDocument
 
 @Injectable()
 export class CreateService {
@@ -82,45 +77,12 @@ export class CreateService {
             throw error
         }
 
-        await enqueue(row.get('id'))
+        await enqueueIngest(row.get('id'))
 
         return {
             id: row.get('id'),
             status: row.get('status'),
         }
-    }
-}
-
-function queue() {
-    if (!ingestDocument) {
-        ingestDocument = new Queue('ingestDocument', bullConfig)
-    }
-
-    return ingestDocument
-}
-
-async function enqueue(documentId) {
-    try {
-        await queue().add(
-            { documentId },
-            {
-                attempts: INGEST_ATTEMPTS,
-                backoff: { type: 'fixed', delay: 500 },
-            }
-        )
-    } catch {
-        await Document.update(
-            {
-                status: 'failed',
-                errorCode: 'ingestionFailed',
-                errorSummary: translate('errors', 'ingestionFailed'),
-            },
-            { where: { id: documentId } }
-        )
-        throw new AppValidationError(
-            translate('errors', 'ingestionFailed'),
-            502
-        )
     }
 }
 

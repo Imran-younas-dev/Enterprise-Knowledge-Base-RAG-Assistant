@@ -90,6 +90,7 @@ async function searchMysql9(ownerId, vector, topK) {
         FROM document_chunks AS c
         INNER JOIN documents AS d ON d.id = c.document_id
         WHERE d.owner_id = :ownerId
+          AND d.status NOT IN ('deleted', 'deleting')
           AND c.embedding IS NOT NULL
         ORDER BY distance ASC
         LIMIT ${topK}
@@ -120,6 +121,7 @@ async function searchMysql8(ownerId, vector, topK) {
         FROM document_chunks AS c
         INNER JOIN documents AS d ON d.id = c.document_id
         WHERE d.owner_id = :ownerId
+          AND d.status NOT IN ('deleted', 'deleting')
           AND c.embedding IS NOT NULL
         `,
         { replacements: { ownerId } }

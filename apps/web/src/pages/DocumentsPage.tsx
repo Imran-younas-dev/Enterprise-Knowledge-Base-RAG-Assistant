@@ -2,7 +2,13 @@ import { useEffect, useRef, useState } from 'react'
 import type { SourceDocument } from '../data/knowledge'
 import { SourceDocuments } from '../features/documents/SourceDocuments'
 import { toSourceDocument } from '../features/documents/toSourceDocument'
-import { fetchDocument, fetchDocuments, uploadDocument } from '../lib/api'
+import {
+  deleteDocument,
+  fetchDocument,
+  fetchDocuments,
+  reprocessDocument,
+  uploadDocument,
+} from '../lib/api'
 
 export function DocumentsPage({ token }: { token: string }) {
   const fileInput = useRef<HTMLInputElement>(null)
@@ -10,6 +16,7 @@ export function DocumentsPage({ token }: { token: string }) {
   const [selectedId, setSelectedId] = useState('')
   const [listError, setListError] = useState('')
   const [pending, setPending] = useState(false)
+  const [confirmDeleteId, setConfirmDeleteId] = useState('')
 
   useEffect(() => {
     let active = true
@@ -93,6 +100,48 @@ export function DocumentsPage({ token }: { token: string }) {
     }
   }
 
+  async function handleReprocess(documentId: string) {
+    setListError('')
+    setConfirmDeleteId('')
+    setPending(true)
+    try {
+      await reprocessDocument(token, documentId)
+      setDocuments((current) =>
+        current.map((document) =>
+          document.id === documentId ? { ...document, status: 'queued', errorSummary: null } : document,
+        ),
+      )
+    } catch (caught) {
+      const message = caught instanceof Error ? caught.message : 'Could not reprocess the document'
+      setListError(message)
+    } finally {
+      setPending(false)
+    }
+  }
+
+  async function handleDelete(documentId: string) {
+    if (confirmDeleteId !== documentId) {
+      setConfirmDeleteId(documentId)
+      return
+    }
+    setListError('')
+    setPending(true)
+    try {
+      await deleteDocument(token, documentId)
+      setDocuments((current) => {
+        const next = current.filter((document) => document.id !== documentId)
+        setSelectedId(next[0]?.id ?? '')
+        return next
+      })
+      setConfirmDeleteId('')
+    } catch (caught) {
+      const message = caught instanceof Error ? caught.message : 'Could not delete the document'
+      setListError(message)
+    } finally {
+      setPending(false)
+    }
+  }
+
   return (
     <div className="dashboard">
       <h1>Documents</h1>
@@ -119,10 +168,25 @@ export function DocumentsPage({ token }: { token: string }) {
             disabled={pending}
             onClick={() => fileInput.current?.click()}
           >
-            {pending ? 'Uploading…' : 'Choose file'}
+            {pending ? 'Working…' : 'Choose file'}
           </button>
         </section>
-        <SourceDocuments documents={documents} selectedId={selectedId} onSelect={setSelectedId} />
+        <SourceDocuments
+          documents={documents}
+          selectedId={selectedId}
+          onSelect={(id) => {
+            setConfirmDeleteId('')
+            setSelectedId(id)
+          }}
+          onReprocess={(id) => {
+            void handleReprocess(id)
+          }}
+          onDelete={(id) => {
+            void handleDelete(id)
+          }}
+          confirmDelete={confirmDeleteId === selectedId}
+          busy={pending}
+        />
       </div>
     </div>
   )
