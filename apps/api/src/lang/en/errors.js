@@ -12,7 +12,7 @@ export default {
     uploadFailed: 'The file could not be stored',
     deleteFailed: 'The file could not be removed',
     ingestionFailed: 'The file could not be read',
-    notSupportedYet: 'Reading DOCX is not supported yet',
+    notSupportedYet: 'This file type cannot be read',
     emptyText: 'This file has no text',
     embeddingFailed: 'Embeddings could not be created',
     answerFailed: 'The answer could not be created',

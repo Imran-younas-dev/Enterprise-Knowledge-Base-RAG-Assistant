@@ -2,6 +2,7 @@ import crypto from 'crypto'
 import path from 'path'
 
 import { Injectable } from '@nestjs/common'
+import { Op } from 'sequelize'
 
 /* import models */
 import '../../models'
@@ -52,6 +53,27 @@ export class CreateService {
             )
         }
 
+        const contentHash = crypto
+            .createHash('sha256')
+            .update(file.buffer)
+            .digest('hex')
+        const existing = await Document.findOne({
+            where: {
+                ownerId: request.user.id,
+                contentHash,
+                status: { [Op.ne]: 'deleted' },
+            },
+            order: [['createdAt', 'DESC']],
+        })
+        if (existing) {
+            return {
+                id: existing.get('id'),
+                status: existing.get('status'),
+                duplicate: true,
+                message: translate('messages', 'duplicateDocument'),
+            }
+        }
+
         const id = crypto.randomUUID()
         const storageKey = `rag/${id}`
         const stored = await storeFile(file.buffer, storageKey)
@@ -66,10 +88,7 @@ export class CreateService {
                 mimeType: file.mimetype || 'application/octet-stream',
                 fileSizeBytes: file.size,
                 storageKey: stored.publicId,
-                contentHash: crypto
-                    .createHash('sha256')
-                    .update(file.buffer)
-                    .digest('hex'),
+                contentHash,
                 status: 'queued',
             })
         } catch (error) {

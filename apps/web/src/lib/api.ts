@@ -125,7 +125,7 @@ export async function deleteDocument(
 export async function uploadDocument(
   token: string,
   file: File,
-): Promise<{ id: string; status: string }> {
+): Promise<{ id: string; status: string; duplicate?: boolean; message?: string }> {
   const payload = new FormData()
   payload.append('file', file)
   const response = await fetch('/api/documents', {
@@ -133,7 +133,12 @@ export async function uploadDocument(
     headers: { authorization: `Bearer ${token}` },
     body: payload,
   })
-  const body = (await response.json()) as Envelope<{ id: string; status: string }> &
+  const body = (await response.json()) as Envelope<{
+    id: string
+    status: string
+    duplicate?: boolean
+    message?: string
+  }> &
     ErrorEnvelope
   if (!response.ok) {
     throw new Error(body.message || 'Upload failed')
