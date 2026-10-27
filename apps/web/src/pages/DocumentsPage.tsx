@@ -15,6 +15,7 @@ export function DocumentsPage({ token }: { token: string }) {
   const [documents, setDocuments] = useState<SourceDocument[]>([])
   const [selectedId, setSelectedId] = useState('')
   const [listError, setListError] = useState('')
+  const [notice, setNotice] = useState('')
   const [pending, setPending] = useState(false)
   const [confirmDeleteId, setConfirmDeleteId] = useState('')
 
@@ -82,13 +83,19 @@ export function DocumentsPage({ token }: { token: string }) {
       return
     }
     setListError('')
+    setNotice('')
     setPending(true)
     try {
-      await uploadDocument(token, file)
+      const uploaded = await uploadDocument(token, file)
       const rows = await fetchDocuments(token)
       const next = rows.map(toSourceDocument)
       setDocuments(next)
-      setSelectedId(next[0]?.id ?? '')
+      if (uploaded.duplicate) {
+        setNotice(uploaded.message || '')
+        setSelectedId(uploaded.id)
+      } else {
+        setSelectedId(next[0]?.id ?? '')
+      }
     } catch (caught) {
       const message = caught instanceof Error ? caught.message : 'Upload failed'
       setListError(message)
@@ -148,6 +155,7 @@ export function DocumentsPage({ token }: { token: string }) {
       <p className="page-note">
         Upload stays on this page. This list is the same one shown on the dashboard.
       </p>
+      {notice ? <p className="page-note">{notice}</p> : null}
       {listError ? <p className="form-error">{listError}</p> : null}
       <div className="workspace single">
         <section className="panel upload-panel">
