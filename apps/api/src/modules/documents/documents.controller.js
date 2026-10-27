@@ -53,7 +53,8 @@ export class DocumentsController {
     @Bind(Req(), Res())
     async create(request, response) {
         const data = await this.createService.create(request)
-        return response.status(202).json({ data })
+        const status = data.duplicate ? 200 : 202
+        return response.status(status).json({ data })
     }
 
     @Get()
