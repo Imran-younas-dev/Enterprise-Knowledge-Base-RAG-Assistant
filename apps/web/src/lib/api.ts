@@ -178,6 +178,7 @@ export type ApiCitation = {
   documentId: string
   title: string
   page: number | null
+  section: string | null
   quote: string
 }
 

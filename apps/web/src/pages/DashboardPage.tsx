@@ -180,9 +180,18 @@ function visibleAnswer(answer: string) {
   return answer.replace(/\s*\[[0-9a-f-]{36}\]/gi, '').trim()
 }
 
+function referenceTitle(citation: ApiCitation) {
+  const parts = [citation.title]
+  if (citation.page != null) {
+    parts.push(`p. ${citation.page}`)
+  } else if (citation.section) {
+    parts.push(citation.section)
+  }
+  return parts.join(', ')
+}
+
 function toReference(citation: ApiCitation, index: number): ReferenceItem {
-  const title =
-    citation.page != null ? `${citation.title}, p. ${citation.page}` : citation.title
+  const title = referenceTitle(citation)
   return {
     id: citation.id,
     kind: kindFor('', citation.title),
