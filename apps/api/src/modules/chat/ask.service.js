@@ -10,7 +10,7 @@ import translate from '../../helpers/translate'
 /* import exceptions */
 import AppValidationError from '../../exceptions/AppValidationError'
 
-const INSUFFICIENT_ANSWER =
+export const INSUFFICIENT_ANSWER =
     'The passages do not contain enough information to answer this question.'
 
 @Injectable()
@@ -24,7 +24,6 @@ export class AskService {
         const retrieved = await this.searchService.search(request)
         const retrievalMs = Date.now() - retrievalStarted
 
-        const retrievalIds = retrieved.chunks.map((chunk) => chunk.id)
         let completed
         const modelStarted = Date.now()
 
@@ -44,23 +43,14 @@ export class AskService {
         }
 
         const modelMs = Date.now() - modelStarted
-        const citations = knownCitations(completed.citations, retrievalIds)
-        const insufficientEvidence =
-            completed.insufficientEvidence || citations.length === 0
 
         // eslint-disable-next-line no-console
         console.log(`retrievalMs=${retrievalMs} modelMs=${modelMs}`)
 
-        const citedIds = insufficientEvidence ? [] : citations
+        const trusted = buildTrustedAskResult(completed, retrieved.chunks)
 
         return {
-            answer: insufficientEvidence
-                ? INSUFFICIENT_ANSWER
-                : stripUnknownCitations(completed.answer, retrievalIds),
-            insufficientEvidence,
-            citations: citedIds.map((id) =>
-                presentCitation(id, retrieved.chunks)
-            ),
+            ...trusted,
             chunks: retrieved.chunks,
             metadata: {
                 retrievalMs,
@@ -70,19 +60,43 @@ export class AskService {
     }
 }
 
-function presentCitation(id, chunks) {
+export function buildTrustedAskResult(completed, chunks) {
+    const retrievalIds = chunks.map((chunk) => chunk.id)
+    const citations = knownCitations(completed.citations, retrievalIds)
+    const insufficientEvidence =
+        completed.insufficientEvidence || citations.length === 0
+
+    return {
+        answer: insufficientEvidence
+            ? INSUFFICIENT_ANSWER
+            : stripUnknownCitations(completed.answer, retrievalIds),
+        insufficientEvidence,
+        citations: insufficientEvidence
+            ? []
+            : citations.map((id) => presentCitation(id, chunks)),
+    }
+}
+
+export function presentCitation(id, chunks) {
     const chunk = chunks.find((item) => item.id === id)
-    const quote = String(chunk.content || '')
-        .replace(/\s+/g, ' ')
-        .trim()
+    const quote = quoteFromChunk(chunk && chunk.content)
 
     return {
         id,
         documentId: chunk.documentId,
         title: chunk.originalFilename,
         page: chunk.pageNumber,
-        quote: quote.length > 180 ? `${quote.slice(0, 177)}...` : quote,
+        section: chunk.sectionTitle || null,
+        quote,
     }
+}
+
+export function quoteFromChunk(content) {
+    const quote = String(content || '')
+        .replace(/\s+/g, ' ')
+        .trim()
+
+    return quote.length > 180 ? `${quote.slice(0, 177)}...` : quote
 }
 
 export function knownCitations(citedIds, retrievalIds) {
@@ -91,7 +105,7 @@ export function knownCitations(citedIds, retrievalIds) {
     return [...new Set((citedIds || []).filter((id) => allowed.has(id)))]
 }
 
-function stripUnknownCitations(answer, retrievalIds) {
+export function stripUnknownCitations(answer, retrievalIds) {
     const allowed = new Set(retrievalIds)
 
     return String(answer || '')
