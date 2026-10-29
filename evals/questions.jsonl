@@ -1,0 +1,12 @@
+{"question":"When a reconciliation job fails, retry it once and then record the error.","expectedDocument":"Project_Phoenix.pdf"}
+{"question":"What should we do after a failed reconciliation job?","expectedDocument":"Project_Phoenix.pdf","paraphrase":true}
+{"question":"What does the payment note say about reconciliation failures?","expectedDocument":"Project_Phoenix.pdf","paraphrase":true}
+{"question":"Harbor audit page one. The north dock ledger starts here.","expectedDocument":"harbor-audit.pdf"}
+{"question":"Where does the north dock ledger begin in the harbor audit?","expectedDocument":"harbor-audit.pdf","paraphrase":true}
+{"question":"The crane inspection was signed on Tuesday.","expectedDocument":"harbor-audit.pdf"}
+{"question":"Where is the spare parts list kept?","expectedDocument":"harbor-audit.pdf","paraphrase":true}
+{"question":"The west dock ledger records the evening tide.","expectedDocument":"west-dock.docx"}
+{"question":"What does the Crane log section say about the inspection?","expectedDocument":"west-dock.docx","paraphrase":true}
+{"question":"How many moons does the purple telescope have?","expectedDocument":null}
+{"question":"What was the revenue of the Mars colony last quarter?","expectedDocument":null}
+{"question":"Which warehouse holds the spare parts according to the harbor audit?","expectedDocument":"harbor-audit.pdf","paraphrase":true}
