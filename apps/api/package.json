@@ -18,7 +18,8 @@
     "seed": "sequelize-cli db:seed:all",
     "undo": "sequelize-cli db:migrate:undo",
     "test": "node --require @babel/register --test test/ask-citations.test.js",
-    "evaluate:retrieval": "babel-node src/scripts/evaluate-retrieval.js"
+    "evaluate:retrieval": "babel-node src/scripts/evaluate-retrieval.js",
+    "review:answers": "babel-node src/scripts/review-answers.js"
   },
   "dependencies": {
     "@nestjs/bull": "^12.0.0",

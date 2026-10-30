@@ -78,9 +78,7 @@ function readGroundedAnswer(question, passages, prompt) {
     const ranked = passages
         .map((passage) => ({
             passage,
-            hits: questionWords.filter((word) =>
-                words(passage.content).includes(word)
-            ),
+            hits: matchingQuestionWords(questionWords, passage.content),
         }))
         .sort((left, right) => right.hits.length - left.hits.length)
 
@@ -111,6 +109,28 @@ function words(text) {
         .replace(/[^a-z0-9\s]/g, ' ')
         .split(/\s+/)
         .filter((word) => word.length > 2 && !STOP_WORDS.has(word))
+}
+
+function matchingQuestionWords(questionWords, content) {
+    const passageStems = new Set(words(content).map(stem))
+
+    return questionWords.filter((word) => passageStems.has(stem(word)))
+}
+
+function stem(word) {
+    if (word.endsWith('ing') && word.length > 5) {
+        return word.slice(0, -3)
+    }
+    if (word.endsWith('ed') && word.length > 4) {
+        return word.slice(0, -2)
+    }
+    if (word.endsWith('es') && word.length > 4) {
+        return word.slice(0, -2)
+    }
+    if (word.endsWith('s') && word.length > 3) {
+        return word.slice(0, -1)
+    }
+    return word
 }
 
 function supportingText(content, hits) {

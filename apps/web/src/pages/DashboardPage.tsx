@@ -19,6 +19,7 @@ export function DashboardPage({ token }: { token: string }) {
   const [answer, setAnswer] = useState('')
   const [citations, setCitations] = useState<ApiCitation[]>([])
   const [asked, setAsked] = useState(false)
+  const [insufficientEvidence, setInsufficientEvidence] = useState(false)
   const [listError, setListError] = useState('')
 
   useEffect(() => {
@@ -82,6 +83,7 @@ export function DashboardPage({ token }: { token: string }) {
     setChunks(nextChunks)
     setCitations(result.citations)
     setAnswer(visibleAnswer(result.answer))
+    setInsufficientEvidence(result.insufficientEvidence)
     setAsked(true)
     setActiveChunkId(firstCitation?.id ?? nextChunks[0]?.id ?? null)
     if (firstCitation) {
@@ -155,6 +157,7 @@ export function DashboardPage({ token }: { token: string }) {
           {asked ? (
             <GeneratedAnswer
               text={answer}
+              insufficientEvidence={insufficientEvidence}
               marks={citations.map((_, index) => String(index + 1))}
               onCite={(mark) => {
                 const citation = citations[Number(mark) - 1]
