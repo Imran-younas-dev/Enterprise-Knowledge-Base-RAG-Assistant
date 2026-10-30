@@ -4,10 +4,12 @@ export function GeneratedAnswer({
   text,
   marks,
   onCite,
+  insufficientEvidence = false,
 }: {
   text: string
   marks: string[]
   onCite: (mark: string) => void
+  insufficientEvidence?: boolean
 }) {
   return (
     <section className="panel answer-panel">
@@ -18,15 +20,22 @@ export function GeneratedAnswer({
         </button>
       </header>
       <p className="answer-copy">
-        {text}{' '}
-        {marks.map((mark, index) => (
-          <span key={mark}>
-            <button type="button" className="cite" onClick={() => onCite(mark)}>
-              {mark}
-            </button>
-            {index < marks.length - 1 ? ', ' : '.'}
-          </span>
-        ))}
+        {text}
+        {insufficientEvidence || marks.length === 0 ? (
+          '.'
+        ) : (
+          <>
+            {' '}
+            {marks.map((mark, index) => (
+              <span key={mark}>
+                <button type="button" className="cite" onClick={() => onCite(mark)}>
+                  {mark}
+                </button>
+                {index < marks.length - 1 ? ', ' : '.'}
+              </span>
+            ))}
+          </>
+        )}
       </p>
     </section>
   )
