@@ -5,6 +5,7 @@ import { SearchService } from '../retrieval/search.service'
 
 /* import helpers */
 import completeAnswer from '../../helpers/complete-answer'
+import { quoteFromChunkContent } from '../../helpers/chunk-quote'
 import translate from '../../helpers/translate'
 
 /* import exceptions */
@@ -92,11 +93,7 @@ export function presentCitation(id, chunks) {
 }
 
 export function quoteFromChunk(content) {
-    const quote = String(content || '')
-        .replace(/\s+/g, ' ')
-        .trim()
-
-    return quote.length > 180 ? `${quote.slice(0, 177)}...` : quote
+    return quoteFromChunkContent(content)
 }
 
 export function knownCitations(citedIds, retrievalIds) {
