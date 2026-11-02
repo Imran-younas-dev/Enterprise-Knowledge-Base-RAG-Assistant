@@ -6,11 +6,17 @@ import {
     MaxLength,
 } from 'class-validator'
 
+/* import config */
+import limits from '../../../config/limits'
+
 /* import helpers */
 import createValidationMessage from '../../../helpers/create-validation-message'
 
 export class AskDto {
-    @MaxLength(2000, createValidationMessage({ key: 'maxLength' }))
+    @MaxLength(
+        limits.maxQuestionLength,
+        createValidationMessage({ key: 'maxLength' })
+    )
     @IsString(createValidationMessage({ key: 'string' }))
     @IsNotEmpty(createValidationMessage({ key: 'required' }))
     question

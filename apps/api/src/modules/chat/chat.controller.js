@@ -7,6 +7,10 @@ import {
     Res,
     UseGuards,
 } from '@nestjs/common'
+import { Throttle } from '@nestjs/throttler'
+
+/* import config */
+import throttle from '../../config/throttle'
 
 /* import services */
 import { AskService } from './ask.service'
@@ -31,6 +35,9 @@ export class ChatController {
     }
 
     @Post('ask')
+    @Throttle({
+        default: { limit: throttle.askLimit, ttl: throttle.ttlMs },
+    })
     @CheckScope(['member'])
     @ValidateRequest(AskDto)
     @UseGuards(AuthGuard, CheckScopeGuard, ValidateRequestGuard)

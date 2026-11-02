@@ -21,6 +21,7 @@ export function DashboardPage({ token }: { token: string }) {
   const [asked, setAsked] = useState(false)
   const [insufficientEvidence, setInsufficientEvidence] = useState(false)
   const [listError, setListError] = useState('')
+  const [searchError, setSearchError] = useState('')
 
   useEffect(() => {
     let active = true
@@ -76,7 +77,7 @@ export function DashboardPage({ token }: { token: string }) {
   }
 
   async function showAnswer(question: string, searchMode: SearchMode) {
-    setListError('')
+    setSearchError('')
     const result = await askQuestion(token, { question, mode: searchMode })
     const nextChunks = result.chunks.map(toDocumentChunk)
     const firstCitation = result.citations[0]
@@ -106,14 +107,12 @@ export function DashboardPage({ token }: { token: string }) {
   }
 
   async function submitQuestion() {
-    if (!query.trim()) {
-      return
-    }
+    setSearchError('')
     try {
-      await showAnswer(query.trim(), mode)
+      await showAnswer(query, mode)
     } catch (caught: unknown) {
       const message = caught instanceof Error ? caught.message : 'The question could not be answered'
-      setListError(message)
+      setSearchError(message)
     }
   }
 
@@ -134,7 +133,11 @@ export function DashboardPage({ token }: { token: string }) {
       <SearchBar
         query={query}
         mode={mode}
-        onQueryChange={setQuery}
+        error={searchError}
+        onQueryChange={(value) => {
+          setSearchError('')
+          setQuery(value)
+        }}
         onModeChange={setMode}
         onSubmit={() => {
           void submitQuestion()
