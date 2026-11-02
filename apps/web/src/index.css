@@ -139,11 +139,23 @@ button {
   max-width: 62ch;
 }
 
+.search-block {
+  margin: 16px 0 18px;
+}
+
+.search-block .search-row {
+  margin: 0;
+}
+
+.search-error {
+  margin: 8px 0 0;
+  padding: 0 10px;
+}
+
 .search-row {
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 12px;
-  margin: 16px 0 18px;
   padding: 10px;
   border-radius: 18px;
   border: 1px solid rgba(94, 234, 212, 0.9);

@@ -11,6 +11,7 @@ import { chunkPages } from '../helpers/chunk-text'
 import loadUpload from '../helpers/load-upload'
 import parseDocument from '../helpers/parse-document'
 import storeChunkVectors from '../helpers/store-chunk-vectors'
+import assertChunkLimit from '../helpers/assert-chunk-limit'
 import translate from '../helpers/translate'
 
 const SAFE_KEYS = new Set([
@@ -18,6 +19,7 @@ const SAFE_KEYS = new Set([
     'emptyText',
     'embeddingFailed',
     'ingestionFailed',
+    'tooManyChunks',
 ])
 
 const TRANSIENT_CODES = new Set(['embeddingFailed', 'ingestionFailed'])
@@ -54,6 +56,7 @@ export class IngestDocumentProcessor {
                 buffer,
             })
             const chunks = chunkPages(parsed.pages)
+            assertChunkLimit(chunks)
 
             const current = await Document.findByPk(documentId)
             if (!current || isClosed(current.get('status'))) {
@@ -134,6 +137,10 @@ function willRetry(job, code) {
 }
 
 function safeCode(error) {
+    if (error && SAFE_KEYS.has(error.validationKey)) {
+        return error.validationKey
+    }
+
     if (error && SAFE_KEYS.has(error.key)) {
         return error.key
     }

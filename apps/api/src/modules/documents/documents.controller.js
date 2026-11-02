@@ -11,6 +11,10 @@ import {
     UseInterceptors,
 } from '@nestjs/common'
 import { FileInterceptor } from '@nestjs/platform-express'
+import { Throttle } from '@nestjs/throttler'
+
+/* import config */
+import throttle from '../../config/throttle'
 
 /* import services */
 import { ChunksService } from './chunks.service'
@@ -43,6 +47,9 @@ export class DocumentsController {
     }
 
     @Post()
+    @Throttle({
+        default: { limit: throttle.uploadLimit, ttl: throttle.ttlMs },
+    })
     @CheckScope(['member'])
     @UseGuards(AuthGuard, CheckScopeGuard)
     @UseInterceptors(

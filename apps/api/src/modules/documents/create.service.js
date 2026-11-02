@@ -38,10 +38,12 @@ export class CreateService {
         }
 
         if (file.size > uploads.maxBytes) {
-            throw new AppValidationError(
+            const error = new AppValidationError(
                 translate('errors', 'fileTooLarge'),
                 422
             )
+            error.validationKey = 'fileTooLarge'
+            throw error
         }
 
         const originalFilename = path.basename(file.originalname || 'document')

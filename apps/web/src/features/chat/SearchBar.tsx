@@ -11,12 +11,14 @@ const modeIcons = {
 export function SearchBar({
   query,
   mode,
+  error,
   onQueryChange,
   onModeChange,
   onSubmit,
 }: {
   query: string
   mode: SearchMode
+  error?: string
   onQueryChange: (value: string) => void
   onModeChange: (mode: SearchMode) => void
   onSubmit: () => void
@@ -27,31 +29,34 @@ export function SearchBar({
   }
 
   return (
-    <form className="search-row" onSubmit={handleSubmit}>
-      <label className="search-field">
-        <SearchIcon />
-        <input
-          value={query}
-          onChange={(event) => onQueryChange(event.target.value)}
-          placeholder="Ask anything to your internal knowledge base..."
-        />
-      </label>
-      <div className="mode-group" role="group" aria-label="Search mode">
-        {searchModes.map((item) => {
-          const Icon = modeIcons[item.id]
-          return (
-            <button
-              key={item.id}
-              type="button"
-              className={mode === item.id ? 'mode-button is-active' : 'mode-button'}
-              onClick={() => onModeChange(item.id)}
-            >
-              <Icon />
-              <span>{item.label}</span>
-            </button>
-          )
-        })}
-      </div>
-    </form>
+    <div className="search-block">
+      <form className="search-row" onSubmit={handleSubmit}>
+        <label className="search-field">
+          <SearchIcon />
+          <input
+            value={query}
+            onChange={(event) => onQueryChange(event.target.value)}
+            placeholder="Ask anything to your internal knowledge base..."
+          />
+        </label>
+        <div className="mode-group" role="group" aria-label="Search mode">
+          {searchModes.map((item) => {
+            const Icon = modeIcons[item.id]
+            return (
+              <button
+                key={item.id}
+                type="button"
+                className={mode === item.id ? 'mode-button is-active' : 'mode-button'}
+                onClick={() => onModeChange(item.id)}
+              >
+                <Icon />
+                <span>{item.label}</span>
+              </button>
+            )
+          })}
+        </div>
+      </form>
+      {error ? <p className="form-error search-error">{error}</p> : null}
+    </div>
   )
 }
