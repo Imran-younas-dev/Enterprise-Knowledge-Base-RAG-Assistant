@@ -12,6 +12,9 @@ export function References({
     <section className="references">
       <h2>References</h2>
       <ul>
+        {items.length === 0 ? (
+          <li className="panel-empty">No references yet.</li>
+        ) : null}
         {items.map((item) => (
           <li key={item.id}>
             <FileIcon kind={item.kind} />

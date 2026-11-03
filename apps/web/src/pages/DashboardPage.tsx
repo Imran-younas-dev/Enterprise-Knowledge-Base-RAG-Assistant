@@ -1,6 +1,12 @@
 import { useEffect, useState } from 'react'
 import type { ReferenceItem, SearchMode, SourceDocument } from '../data/knowledge'
-import { askQuestion, fetchDocumentChunks, fetchDocuments, type ApiCitation } from '../lib/api'
+import { StatusBanner } from '../components/StatusBanner'
+import { askQuestion, fetchDocumentChunks, fetchDocuments, fetchHealth, type ApiCitation } from '../lib/api'
+import {
+  API_UNREACHABLE_MESSAGE,
+  isApiUnreachableMessage,
+  readApiFailure,
+} from '../lib/read-api-failure'
 import { toDocumentChunk } from '../features/documents/toDocumentChunk'
 import { kindFor, toSourceDocument } from '../features/documents/toSourceDocument'
 import { GeneratedAnswer } from '../features/chat/GeneratedAnswer'
@@ -13,21 +19,34 @@ export function DashboardPage({ token }: { token: string }) {
   const [query, setQuery] = useState('')
   const [mode, setMode] = useState<SearchMode>('web')
   const [documents, setDocuments] = useState<SourceDocument[]>([])
+  const [documentsLoading, setDocumentsLoading] = useState(true)
+  const [chunksLoading, setChunksLoading] = useState(false)
   const [selectedDocumentId, setSelectedDocumentId] = useState('')
   const [chunks, setChunks] = useState<ReturnType<typeof toDocumentChunk>[]>([])
   const [activeChunkId, setActiveChunkId] = useState<string | null>(null)
   const [answer, setAnswer] = useState('')
   const [citations, setCitations] = useState<ApiCitation[]>([])
   const [asked, setAsked] = useState(false)
+  const [asking, setAsking] = useState(false)
   const [insufficientEvidence, setInsufficientEvidence] = useState(false)
-  const [listError, setListError] = useState('')
+  const [chunkNotice, setChunkNotice] = useState('')
   const [searchError, setSearchError] = useState('')
+  const [apiUnreachable, setApiUnreachable] = useState(false)
 
   useEffect(() => {
     let active = true
-    fetchDocuments(token)
-      .then((rows) => {
+    setDocumentsLoading(true)
+    setApiUnreachable(false)
+
+    void fetchHealth()
+      .then(() => {
         if (!active) {
+          return null
+        }
+        return fetchDocuments(token)
+      })
+      .then((rows) => {
+        if (!active || !rows) {
           return
         }
         const next = rows.map(toSourceDocument)
@@ -35,8 +54,11 @@ export function DashboardPage({ token }: { token: string }) {
         const firstId = next[0]?.id ?? ''
         setSelectedDocumentId(firstId)
         if (firstId) {
+          setChunksLoading(true)
           return fetchDocumentChunks(token, firstId)
         }
+        setChunks([])
+        setActiveChunkId(null)
         return []
       })
       .then((rows) => {
@@ -51,9 +73,20 @@ export function DashboardPage({ token }: { token: string }) {
         if (!active) {
           return
         }
-        const message = caught instanceof Error ? caught.message : 'Could not load documents'
-        setListError(message)
+        const message = readApiFailure(caught, 'Could not load documents')
+        if (isApiUnreachableMessage(message)) {
+          setApiUnreachable(true)
+        } else {
+          setChunkNotice(message)
+        }
       })
+      .finally(() => {
+        if (active) {
+          setDocumentsLoading(false)
+          setChunksLoading(false)
+        }
+      })
+
     return () => {
       active = false
     }
@@ -69,11 +102,16 @@ export function DashboardPage({ token }: { token: string }) {
 
   async function showDocumentChunks(documentId: string) {
     setSelectedDocumentId(documentId)
-    setListError('')
-    const rows = await fetchDocumentChunks(token, documentId)
-    const nextChunks = rows.map(toDocumentChunk)
-    setChunks(nextChunks)
-    setActiveChunkId(nextChunks[0]?.id ?? null)
+    setChunkNotice('')
+    setChunksLoading(true)
+    try {
+      const rows = await fetchDocumentChunks(token, documentId)
+      const nextChunks = rows.map(toDocumentChunk)
+      setChunks(nextChunks)
+      setActiveChunkId(nextChunks[0]?.id ?? null)
+    } finally {
+      setChunksLoading(false)
+    }
   }
 
   async function showAnswer(question: string, searchMode: SearchMode) {
@@ -93,47 +131,72 @@ export function DashboardPage({ token }: { token: string }) {
   }
 
   async function selectDocument(documentId: string) {
+    if (asking) {
+      return
+    }
     try {
       if (query.trim()) {
         setSelectedDocumentId(documentId)
+        setAsking(true)
         await showAnswer(query.trim(), mode)
         return
       }
       await showDocumentChunks(documentId)
     } catch (caught: unknown) {
-      const message = caught instanceof Error ? caught.message : 'Could not load chunks'
-      setListError(message)
+      const message = readApiFailure(caught, 'Could not load passages')
+      if (isApiUnreachableMessage(message)) {
+        setApiUnreachable(true)
+      } else {
+        setChunkNotice(message)
+      }
+    } finally {
+      setAsking(false)
     }
   }
 
   async function submitQuestion() {
     setSearchError('')
+    setAsking(true)
     try {
       await showAnswer(query, mode)
     } catch (caught: unknown) {
-      const message = caught instanceof Error ? caught.message : 'The question could not be answered'
-      setSearchError(message)
+      const message = readApiFailure(caught, 'The question could not be answered')
+      if (isApiUnreachableMessage(message)) {
+        setApiUnreachable(true)
+      } else {
+        setSearchError(message)
+      }
+    } finally {
+      setAsking(false)
     }
   }
 
   const references = citations.map(toReference)
   const thinkingLayout = mode === 'thinking' && asked
+  const chunkEmptyLabel =
+    documents.length === 0
+      ? 'Upload a document to see passages here.'
+      : 'No passages yet. Select a document or ask a question.'
   const chunkPanel = (
     <DocumentChunks
       chunks={chunks}
       activeChunkId={activeChunkId}
       onSelect={highlightChunk}
-      status={thinkingLayout ? 'Retrieved passages for this question.' : undefined}
+      loading={chunksLoading}
+      emptyLabel={chunkEmptyLabel}
+      status={chunkNotice || (thinkingLayout ? 'Retrieved passages for this question.' : undefined)}
     />
   )
 
   return (
     <div className="dashboard">
       <h1>AI Knowledge RAG</h1>
+      {apiUnreachable ? <StatusBanner message={API_UNREACHABLE_MESSAGE} /> : null}
       <SearchBar
         query={query}
         mode={mode}
         error={searchError}
+        disabled={asking || apiUnreachable}
         onQueryChange={(value) => {
           setSearchError('')
           setQuery(value)
@@ -145,10 +208,10 @@ export function DashboardPage({ token }: { token: string }) {
       />
       <div className="workspace">
         <div className="stack">
-          {listError ? <p className="form-error">{listError}</p> : null}
           <SourceDocuments
             documents={documents}
             selectedId={selectedDocumentId}
+            loading={documentsLoading}
             onSelect={(id) => {
               void selectDocument(id)
             }}
@@ -157,7 +220,14 @@ export function DashboardPage({ token }: { token: string }) {
         </div>
         <div className="stack">
           {thinkingLayout ? chunkPanel : null}
-          {asked ? (
+          {asking ? (
+            <section className="panel answer-panel">
+              <header className="panel-head">
+                <h2>AI-Generated Answer</h2>
+              </header>
+              <p className="panel-empty">Answering your question…</p>
+            </section>
+          ) : asked ? (
             <GeneratedAnswer
               text={answer}
               insufficientEvidence={insufficientEvidence}
@@ -169,7 +239,14 @@ export function DashboardPage({ token }: { token: string }) {
                 }
               }}
             />
-          ) : null}
+          ) : (
+            <section className="panel answer-panel">
+              <header className="panel-head">
+                <h2>AI-Generated Answer</h2>
+              </header>
+              <p className="panel-empty">Ask a question to generate an answer.</p>
+            </section>
+          )}
           <References
             items={references}
             onSelect={(id) => {

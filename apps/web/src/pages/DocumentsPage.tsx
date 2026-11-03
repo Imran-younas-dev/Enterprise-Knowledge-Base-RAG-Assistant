@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { SourceDocument } from '../data/knowledge'
 import { SourceDocuments } from '../features/documents/SourceDocuments'
 import { toSourceDocument } from '../features/documents/toSourceDocument'
+import { StatusBanner } from '../components/StatusBanner'
 import {
   deleteDocument,
   fetchDocument,
@@ -9,18 +10,27 @@ import {
   reprocessDocument,
   uploadDocument,
 } from '../lib/api'
+import {
+  API_UNREACHABLE_MESSAGE,
+  isApiUnreachableMessage,
+  readApiFailure,
+} from '../lib/read-api-failure'
 
 export function DocumentsPage({ token }: { token: string }) {
   const fileInput = useRef<HTMLInputElement>(null)
   const [documents, setDocuments] = useState<SourceDocument[]>([])
   const [selectedId, setSelectedId] = useState('')
   const [listError, setListError] = useState('')
+  const [apiUnreachable, setApiUnreachable] = useState(false)
+  const [documentsLoading, setDocumentsLoading] = useState(true)
   const [notice, setNotice] = useState('')
   const [pending, setPending] = useState(false)
   const [confirmDeleteId, setConfirmDeleteId] = useState('')
 
   useEffect(() => {
     let active = true
+    setDocumentsLoading(true)
+    setApiUnreachable(false)
     fetchDocuments(token)
       .then((rows) => {
         if (!active) {
@@ -34,8 +44,18 @@ export function DocumentsPage({ token }: { token: string }) {
         if (!active) {
           return
         }
-        const message = caught instanceof Error ? caught.message : 'Could not load documents'
-        setListError(message)
+        const message = readApiFailure(caught, 'Could not load documents')
+        if (isApiUnreachableMessage(message)) {
+          setApiUnreachable(true)
+          setListError('')
+        } else {
+          setListError(message)
+        }
+      })
+      .finally(() => {
+        if (active) {
+          setDocumentsLoading(false)
+        }
       })
     return () => {
       active = false
@@ -97,8 +117,12 @@ export function DocumentsPage({ token }: { token: string }) {
         setSelectedId(next[0]?.id ?? '')
       }
     } catch (caught) {
-      const message = caught instanceof Error ? caught.message : 'Upload failed'
-      setListError(message)
+      const message = readApiFailure(caught, 'Upload failed')
+      if (isApiUnreachableMessage(message)) {
+        setApiUnreachable(true)
+      } else {
+        setListError(message)
+      }
     } finally {
       setPending(false)
       if (fileInput.current) {
@@ -155,8 +179,9 @@ export function DocumentsPage({ token }: { token: string }) {
       <p className="page-note">
         Upload stays on this page. This list is the same one shown on the dashboard.
       </p>
+      {apiUnreachable ? <StatusBanner message={API_UNREACHABLE_MESSAGE} /> : null}
       {notice ? <p className="page-note">{notice}</p> : null}
-      {listError ? <p className="form-error">{listError}</p> : null}
+      {listError ? <p className="form-error page-note">{listError}</p> : null}
       <div className="workspace single">
         <section className="panel upload-panel">
           <h2>Add a document</h2>
@@ -182,6 +207,7 @@ export function DocumentsPage({ token }: { token: string }) {
         <SourceDocuments
           documents={documents}
           selectedId={selectedId}
+          loading={documentsLoading}
           onSelect={(id) => {
             setConfirmDeleteId('')
             setSelectedId(id)

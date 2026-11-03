@@ -12,6 +12,7 @@ export function SearchBar({
   query,
   mode,
   error,
+  disabled = false,
   onQueryChange,
   onModeChange,
   onSubmit,
@@ -19,6 +20,7 @@ export function SearchBar({
   query: string
   mode: SearchMode
   error?: string
+  disabled?: boolean
   onQueryChange: (value: string) => void
   onModeChange: (mode: SearchMode) => void
   onSubmit: () => void
@@ -30,11 +32,16 @@ export function SearchBar({
 
   return (
     <div className="search-block">
-      <form className="search-row" onSubmit={handleSubmit}>
+      <form
+        className={disabled ? 'search-row is-busy' : 'search-row'}
+        onSubmit={handleSubmit}
+        aria-busy={disabled}
+      >
         <label className="search-field">
           <SearchIcon />
           <input
             value={query}
+            disabled={disabled}
             onChange={(event) => onQueryChange(event.target.value)}
             placeholder="Ask anything to your internal knowledge base..."
           />
@@ -46,6 +53,7 @@ export function SearchBar({
               <button
                 key={item.id}
                 type="button"
+                disabled={disabled}
                 className={mode === item.id ? 'mode-button is-active' : 'mode-button'}
                 onClick={() => onModeChange(item.id)}
               >

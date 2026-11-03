@@ -6,11 +6,15 @@ export function DocumentChunks({
   activeChunkId,
   onSelect,
   status,
+  loading = false,
+  emptyLabel = 'No passages yet. Select a document or ask a question.',
 }: {
   chunks: DocumentChunk[]
   activeChunkId: string | null
   onSelect: (id: string) => void
   status?: string
+  loading?: boolean
+  emptyLabel?: string
 }) {
   return (
     <section className="panel">
@@ -20,9 +24,11 @@ export function DocumentChunks({
           <MoreIcon />
         </button>
       </header>
-      {status ? <p className="page-note">{status}</p> : null}
-      {chunks.length === 0 ? <p className="page-note">No chunks for this document yet.</p> : null}
+      {status ? <p className="panel-note">{status}</p> : null}
       <ul className="chunk-list">
+        {chunks.length === 0 ? (
+          <li className="panel-empty">{loading ? 'Loading passages…' : emptyLabel}</li>
+        ) : null}
         {chunks.map((chunk, index) => (
           <li key={chunk.id}>
             <button

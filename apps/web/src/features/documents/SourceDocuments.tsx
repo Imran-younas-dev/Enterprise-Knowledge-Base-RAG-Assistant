@@ -4,6 +4,7 @@ import type { SourceDocument } from '../../data/knowledge'
 export function SourceDocuments({
   documents,
   selectedId,
+  loading = false,
   onSelect,
   onReprocess,
   onDelete,
@@ -12,6 +13,7 @@ export function SourceDocuments({
 }: {
   documents: SourceDocument[]
   selectedId: string
+  loading?: boolean
   onSelect: (id: string) => void
   onReprocess?: (id: string) => void
   onDelete?: (id: string) => void
@@ -48,32 +50,49 @@ export function SourceDocuments({
           </button>
         </div>
       ) : null}
-      {documents.length === 0 ? <p className="page-note">No documents yet.</p> : null}
       <ul className="doc-list">
-        {documents.map((document) => (
-          <li key={document.id}>
-            <button
-              type="button"
-              className={document.id === selectedId ? 'doc-row is-selected' : 'doc-row'}
-              onClick={() => onSelect(document.id)}
-            >
-              <FileIcon kind={document.kind} />
-              <span className="doc-title">{document.title}</span>
-              <span className="doc-status" title={statusLabel(document)}>
-                {statusLabel(document)}
-              </span>
-              <span className="doc-date">{document.dateLabel}</span>
-            </button>
-          </li>
-        ))}
+        {documents.length === 0 ? (
+          <li className="panel-empty">{loading ? 'Loading documents…' : 'No documents yet.'}</li>
+        ) : (
+          documents.map((document) => (
+            <li key={document.id}>
+              <button
+                type="button"
+                className={rowClass(document, selectedId)}
+                onClick={() => onSelect(document.id)}
+              >
+                <FileIcon kind={document.kind} />
+                <span className="doc-title">{document.title}</span>
+                <span className="doc-status" title={statusLabel(document)}>
+                  {statusLabel(document)}
+                </span>
+                <span className="doc-date">{document.dateLabel}</span>
+              </button>
+            </li>
+          ))
+        )}
       </ul>
     </section>
   )
 }
 
+function rowClass(document: SourceDocument, selectedId: string) {
+  const parts = ['doc-row']
+  if (document.id === selectedId) {
+    parts.push('is-selected')
+  }
+  if (document.status === 'failed') {
+    parts.push('is-failed')
+  }
+  return parts.join(' ')
+}
+
 function statusLabel(document: SourceDocument) {
   if (document.status === 'failed' && document.errorSummary) {
-    return `failed · ${document.errorSummary}`
+    return document.errorSummary
+  }
+  if (document.status === 'failed') {
+    return 'failed'
   }
   return document.status || ''
 }
