@@ -9,6 +9,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler'
 import jwtOptions from './config/jwt'
 import throttle from './config/throttle'
 import { AllExceptionsFilter } from './middlewares/exception-handler'
+import { RequestContextMiddleware } from './middlewares/request-context.middleware'
 import modules from './modules'
 import './models'
 
@@ -41,4 +42,8 @@ dotenv.config({
         },
     ],
 })
-export class AppModule {}
+export class AppModule {
+    configure(consumer) {
+        consumer.apply(RequestContextMiddleware).forRoutes('*')
+    }
+}
