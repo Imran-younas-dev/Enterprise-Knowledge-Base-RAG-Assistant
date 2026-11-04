@@ -13,7 +13,7 @@ export class HealthController {
     @Get()
     @Bind(Req(), Res())
     async check(_request, response) {
-        const data = await this.checkService.check(_request)
+        const data = await this.checkService.check()
         return response.json({ data })
     }
 }

@@ -513,6 +513,34 @@ button {
   margin-top: 6px;
 }
 
+.health-checks {
+  margin: 0 0 8px;
+  padding: 0;
+  list-style: none;
+}
+
+.health-check {
+  display: grid;
+  grid-template-columns: 88px 1fr;
+  gap: 10px;
+  padding: 10px 0;
+  border-top: 1px solid rgba(28, 36, 48, 0.06);
+  font-size: 14px;
+}
+
+.health-check-label {
+  font-weight: 650;
+  color: #374151;
+}
+
+.health-check-message {
+  color: #6b7280;
+}
+
+.health-check.is-down .health-check-message {
+  color: #9f1239;
+}
+
 @media (max-width: 860px) {
   .topbar,
   .search-row,
