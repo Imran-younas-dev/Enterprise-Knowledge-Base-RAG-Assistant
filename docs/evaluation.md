@@ -46,8 +46,9 @@ Only rows with an `expectedDocument` count toward the denominator. Unanswerable 
 | Date | Top k | Hit Rate@k | Hits | Answerable questions | Notes |
 |------|-------|------------|------|----------------------|-------|
 | 2026-10-29 | 4 | 1.000 | 10 | 10 | Chunk size unchanged (500 / 50 overlap). Local MiniLM embeddings, MySQL 8 JSON vectors. |
+| 2026-11-08 | 4 | 1.000 | 10 | 10 | Day 30 rerun. Same chunking. Ubuntu 6.8, Node 20.19.5. |
 
-Command: `npm run evaluate:retrieval` on branch `day-22-evaluation-set`.
+Command: `npm run evaluate:retrieval` on branch `day-22-evaluation-set` (2026-10-29); Day 30 rerun on `day-30-measure-and-stop`.
 
 ## Answer review (human)
 
@@ -103,3 +104,41 @@ npm run check:prompt-injection
 ```
 
 Hardening applied: system prompt lines in `buildPrompt` treat passages as **untrusted data**; the local reader skips instruction-like sentences in `supportingText`. Retrieved text is **evidence**, not commands — authorization still happens in SQL before any chunk reaches the model.
+
+## Day 30 — final measurement (2026-11-08)
+
+**Machine:** Linux x86_64 (Ubuntu 6.8), Node v20.19.5.
+
+**Models (defaults in `.env.example`):**
+
+| Role | Provider | Model |
+|------|----------|--------|
+| Embeddings | `local` | `Xenova/all-MiniLM-L6-v2` (384-d) |
+| Chat | `local` | `local-grounded-reader` (overlap-based reader, not an external LLM API) |
+
+**Retrieval:** `npm run evaluate:retrieval` → **Hit Rate@4: 1.000 (10/10)** on `evals/questions.jsonl` (12 lines, 10 answerable, 2 unanswerable).
+
+**Answer review:** `npm run review:answers` (first 10 questions) → **faithful 10/10**, **citations match 10/10** (same counts as 2026-10-30 human review after the stem-overlap fix).
+
+**Chat latency (`metadata` on `POST /api/chat/ask`, warm retrieval):**
+
+| Sample question | retrievalMs | modelMs | insufficientEvidence |
+|-----------------|------------|---------|----------------------|
+| Payment / reconciliation (literal) | 17–550* | 0–1 | false |
+| CEO salary (unanswerable) | 16–17 | 0 | true |
+| Harbor audit (literal) | 17 | 1 | false |
+
+\*First embedding call after process start can load Xenova weights (~550 ms retrievalMs once); steady-state review script lines were ~20 ms retrievalMs.
+
+No reranker, no cross-encoder, and no external chat API were used for these numbers.
+
+### What we would do next (on purpose, not in the 30-day stop)
+
+- Plug a real chat provider behind `complete-answer.js` and **remeasure** faithfulness and latency.
+- Multi-tenant orgs, roles beyond `member`, and audit export.
+- Reranker on top-k before the reader; A/B Hit Rate@k after any chunking change.
+- Deploy: HTTPS, secrets manager, horizontal workers, managed MySQL/Redis, remove dev seed credentials.
+
+### What we are leaving out on purpose
+
+Organizations, reranker, hosted LLM, and a large offline benchmark set—the 30-day goal was a **working, grounded, owner-scoped** assistant with measured retrieval and answer checks on a **small** eval set, not production scale or marketing performance claims.
