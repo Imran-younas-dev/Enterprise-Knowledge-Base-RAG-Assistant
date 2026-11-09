@@ -1,5 +1,3 @@
-import { MoreIcon } from '../../components/Icons'
-
 export function GeneratedAnswer({
   text,
   marks,
@@ -13,11 +11,8 @@ export function GeneratedAnswer({
 }) {
   return (
     <section className="panel answer-panel">
-      <header className="panel-head">
+      <header className="panel-head panel-head-title-only">
         <h2>AI-Generated Answer</h2>
-        <button type="button" className="icon-button" aria-label="Answer actions">
-          <MoreIcon />
-        </button>
       </header>
       <p className="answer-copy">
         {text}

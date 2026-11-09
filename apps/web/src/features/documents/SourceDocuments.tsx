@@ -1,4 +1,4 @@
-import { FileIcon, MoreIcon } from '../../components/Icons'
+import { FileIcon } from '../../components/Icons'
 import type { SourceDocument } from '../../data/knowledge'
 
 export function SourceDocuments({
@@ -24,11 +24,8 @@ export function SourceDocuments({
 
   return (
     <section className="panel">
-      <header className="panel-head">
+      <header className="panel-head panel-head-title-only">
         <h2>Source Documents</h2>
-        <button type="button" className="icon-button" aria-label="Document actions">
-          <MoreIcon />
-        </button>
       </header>
       {selected && onReprocess && onDelete ? (
         <div className="doc-actions">

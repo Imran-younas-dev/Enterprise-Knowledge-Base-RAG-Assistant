@@ -112,12 +112,85 @@ export function AvatarIcon({ className }: IconProps) {
   )
 }
 
-export function MoreIcon() {
+export function ServerHealthIcon() {
   return (
-    <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-      <circle cx="6" cy="12" r="1.3" fill="currentColor" />
-      <circle cx="12" cy="12" r="1.3" fill="currentColor" />
-      <circle cx="18" cy="12" r="1.3" fill="currentColor" />
+    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+      <rect
+        x="5"
+        y="4"
+        width="14"
+        height="6"
+        rx="1.5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.6"
+      />
+      <rect
+        x="5"
+        y="12"
+        width="14"
+        height="6"
+        rx="1.5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.6"
+      />
+      <circle cx="8" cy="7" r="1" fill="currentColor" />
+      <circle cx="8" cy="15" r="1" fill="currentColor" />
+    </svg>
+  )
+}
+
+export function DatabaseHealthIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+      <ellipse cx="12" cy="6.5" rx="7" ry="3" fill="none" stroke="currentColor" strokeWidth="1.6" />
+      <path
+        d="M5 6.5v5c0 1.7 3.1 3 7 3s7-1.3 7-3v-5M5 11.5v5c0 1.7 3.1 3 7 3s7-1.3 7-3v-5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.6"
+      />
+    </svg>
+  )
+}
+
+export function RedisHealthIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+      <path
+        d="M12 4 4 8v8l8 4 8-4V8l-8-4Z"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+      <path d="M4 8l8 4 8-4M12 12v8" fill="none" stroke="currentColor" strokeWidth="1.6" />
+    </svg>
+  )
+}
+
+export function StatusOkIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+      <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" strokeWidth="1.6" />
+      <path
+        d="M8 12.2 10.8 15 16 9.5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
+export function StatusDownIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+      <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M9 9l6 6M15 9l-6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
     </svg>
   )
 }
