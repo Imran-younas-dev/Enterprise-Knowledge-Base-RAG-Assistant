@@ -85,7 +85,7 @@ Do not treat these numbers as guarantees on your data or hardware without rerunn
 - **File types:** PDF, DOCX, TXT, Markdown (`apps/api/src/config/uploads.js`).
 - **Ownership:** documents belong to one user; **no organizations or shared libraries**.
 - **Retrieval:** top-k similarity only — **no reranker**.
-- **Chat model:** default is a **local** passage reader, not OpenAI/Claude (`CHAT_PROVIDER=local`). External LLM is not wired in the API yet.
+- **Chat model:** default **local** reader, or **Gemini** (`CHAT_PROVIDER=gemini`, `GEMINI_API_KEY`, `CHAT_MODEL` e.g. `gemini-2.0-flash`). Embeddings stay local.
 - **Embeddings:** default **local** MiniLM (`EMBEDDING_PROVIDER=local`); first run downloads weights.
 - **Storage:** Cloudinary required for uploads; not optional for the demo path.
 - **Evaluation:** small fixed set under `evals/` — expand before making product claims.

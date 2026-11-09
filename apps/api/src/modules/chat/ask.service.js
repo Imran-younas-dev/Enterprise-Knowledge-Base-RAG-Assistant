@@ -36,11 +36,8 @@ export class AskService {
                     content: chunk.content,
                 })),
             })
-        } catch {
-            throw new AppValidationError(
-                translate('errors', 'answerFailed'),
-                502
-            )
+        } catch (error) {
+            throw new AppValidationError(answerFailureMessage(error), 502)
         }
 
         const modelMs = Date.now() - modelStarted
@@ -110,4 +107,20 @@ export function stripUnknownCitations(answer, retrievalIds) {
             allowed.has(id) ? ` [${id}]` : ''
         )
         .trim()
+}
+
+function answerFailureMessage(error) {
+    if (error && error.key === 'authNotConfigured') {
+        return translate('errors', 'geminiKeyMissing')
+    }
+
+    const message = error && error.message ? String(error.message).trim() : ''
+    if (message && error.key === 'answerFailed') {
+        if (message.length > 320) {
+            return `${message.slice(0, 317)}...`
+        }
+        return message
+    }
+
+    return translate('errors', 'answerFailed')
 }
