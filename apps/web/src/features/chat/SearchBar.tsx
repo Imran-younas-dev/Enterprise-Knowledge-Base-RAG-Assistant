@@ -1,6 +1,6 @@
 import { FormEvent } from 'react'
 import { BrainIcon, DeepSearchIcon, GlobeIcon, SearchIcon } from '../../components/Icons'
-import { searchModeHints, searchModes, type SearchMode } from '../../data/knowledge'
+import { searchModeHints, searchModes, searchScopeNote, type SearchMode } from '../../data/knowledge'
 
 const modeIcons = {
   web: GlobeIcon,
@@ -69,6 +69,7 @@ export function SearchBar({
           })}
         </div>
       </form>
+      <p className="search-scope-note">{searchScopeNote}</p>
       {error ? <p className="form-error search-error">{error}</p> : null}
     </div>
   )

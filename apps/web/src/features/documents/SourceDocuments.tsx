@@ -10,6 +10,7 @@ export function SourceDocuments({
   onDelete,
   confirmDelete = false,
   busy = false,
+  emptyHint,
 }: {
   documents: SourceDocument[]
   selectedId: string
@@ -19,6 +20,7 @@ export function SourceDocuments({
   onDelete?: (id: string) => void
   confirmDelete?: boolean
   busy?: boolean
+  emptyHint?: string
 }) {
   const selected = documents.find((document) => document.id === selectedId)
 
@@ -49,7 +51,9 @@ export function SourceDocuments({
       ) : null}
       <ul className="doc-list">
         {documents.length === 0 ? (
-          <li className="panel-empty">{loading ? 'Loading documents…' : 'No documents yet.'}</li>
+          <li className="panel-empty">
+            {loading ? 'Loading documents…' : emptyHint ?? 'No documents yet.'}
+          </li>
         ) : (
           documents.map((document) => (
             <li key={document.id}>
@@ -59,9 +63,12 @@ export function SourceDocuments({
                 onClick={() => onSelect(document.id)}
               >
                 <FileIcon kind={document.kind} />
-                <span className="doc-title">{document.title}</span>
-                <span className="doc-status" title={statusLabel(document)}>
-                  {statusLabel(document)}
+                <span className="doc-title">
+                  {document.title}
+                  <span className="doc-title-sep"> · </span>
+                  <span className="doc-status-inline" title={statusLabel(document)}>
+                    {statusLabel(document)}
+                  </span>
                 </span>
                 <span className="doc-date">{document.dateLabel}</span>
               </button>
@@ -86,10 +93,16 @@ function rowClass(document: SourceDocument, selectedId: string) {
 
 function statusLabel(document: SourceDocument) {
   if (document.status === 'failed' && document.errorSummary) {
-    return document.errorSummary
+    return `failed — ${document.errorSummary}`
+  }
+  if (document.status === 'processing') {
+    return 'processing…'
+  }
+  if (document.status === 'queued') {
+    return 'queued'
   }
   if (document.status === 'failed') {
     return 'failed'
   }
-  return document.status || ''
+  return document.status || 'unknown'
 }

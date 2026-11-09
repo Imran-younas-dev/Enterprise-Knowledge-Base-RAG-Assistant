@@ -334,18 +334,24 @@ button {
   font-size: 14px;
 }
 
-.doc-date,
-.doc-status {
+.doc-date {
   color: #6b7280;
   font-size: 13px;
 }
 
-.doc-status {
-  max-width: 220px;
-  overflow: hidden;
-  font-size: 12px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.doc-status-inline {
+  color: #4b5563;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.doc-title-sep {
+  color: #9ca3af;
+  font-weight: 400;
+}
+
+.doc-row.is-failed .doc-status-inline {
+  color: #b45309;
 }
 
 .doc-row.is-selected {
@@ -491,12 +497,56 @@ button {
   font-weight: 650;
 }
 
-.chunk-card span,
-.ref-link {
+.chunk-card > span {
   display: block;
   margin-top: 6px;
   color: #6b7280;
   font-size: 12px;
+}
+
+.chunk-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.chunk-card-head strong {
+  flex: 1;
+  min-width: 0;
+}
+
+.chunk-score {
+  flex: none;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #0f766e;
+  background: rgba(153, 246, 228, 0.45);
+}
+
+.chunk-highlight {
+  background: rgba(254, 243, 199, 0.95);
+  color: #1f2937;
+  border-radius: 3px;
+  padding: 0 2px;
+}
+
+.collapsible-toggle {
+  flex: none;
+}
+
+.panel-note-muted {
+  color: #9ca3af;
+}
+
+.ref-link {
+  display: block;
+  margin-top: 6px;
+  color: #374151;
+  font-size: 13px;
+  line-height: 1.45;
 }
 
 .chunk-card.is-active {
@@ -506,6 +556,59 @@ button {
 .answer-copy {
   margin: 8px 0 16px;
   font-size: 15px;
+  line-height: 1.55;
+}
+
+.answer-refusal {
+  margin: 8px 0 16px;
+  font-size: 15px;
+  line-height: 1.55;
+  color: #374151;
+  font-weight: 600;
+}
+
+.answer-panel.is-refusal {
+  border-color: rgba(251, 191, 36, 0.35);
+  background: rgba(255, 251, 235, 0.85);
+}
+
+.answer-skeleton {
+  display: grid;
+  gap: 10px;
+  margin: 10px 0 6px;
+}
+
+.answer-skeleton span {
+  display: block;
+  height: 12px;
+  border-radius: 6px;
+  background: linear-gradient(
+    90deg,
+    rgba(209, 213, 219, 0.35) 0%,
+    rgba(229, 231, 235, 0.85) 50%,
+    rgba(209, 213, 219, 0.35) 100%
+  );
+  background-size: 200% 100%;
+  animation: answer-shimmer 1.2s ease-in-out infinite;
+}
+
+.answer-skeleton span.short {
+  width: 62%;
+}
+
+@keyframes answer-shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}
+
+.search-scope-note {
+  margin: 8px 2px 0;
+  color: #4b5563;
+  font-size: 13px;
 }
 
 .cite {
@@ -527,6 +630,8 @@ button {
 .references p {
   margin: 0;
   font-size: 14px;
+  line-height: 1.45;
+  color: #1f2937;
 }
 
 .references strong {
