@@ -15,6 +15,7 @@ export type DocumentChunk = {
   label: string
   excerpt: string
   sourceLabel: string
+  relevanceScore?: number
 }
 
 export type ReferenceItem = {
@@ -26,16 +27,19 @@ export type ReferenceItem = {
 }
 
 export const searchModes = [
-  { id: 'web', label: 'Web Search' },
-  { id: 'thinking', label: 'Thinking' },
-  { id: 'deep', label: 'Deep Search' },
+  { id: 'web', label: 'Quick' },
+  { id: 'thinking', label: 'Passages first' },
+  { id: 'deep', label: 'Wide' },
 ] as const
 
 export type SearchMode = (typeof searchModes)[number]['id']
 
+export const searchScopeNote =
+  'Answers use only your uploaded documents — not the public web.'
+
 export const searchModeHints: Record<SearchMode, string> = {
-  web: 'Searches your uploaded files (top 4 passages). Expect a cited answer grounded in those passages, or an insufficient-evidence message if nothing matches.',
+  web: 'Retrieves the top 4 passages, then generates a cited answer (or a no-match message).',
   thinking:
-    'Same search as Web Search, but retrieved passages appear on the right before the answer so you can verify evidence first.',
-  deep: 'Pulls more passages (top 8) for broader questions. Useful for vague or multi-topic questions; answers still come only from your documents.',
+    'Same retrieval as Quick; after you ask, expand “Retrieved passages” first if you want to read evidence before the answer.',
+  deep: 'Retrieves the top 8 passages for broader questions. Still limited to your library.',
 }
