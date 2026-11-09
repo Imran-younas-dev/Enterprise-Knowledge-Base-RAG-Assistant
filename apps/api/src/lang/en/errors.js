@@ -16,6 +16,7 @@ export default {
     emptyText: 'This file has no text',
     embeddingFailed: 'Embeddings could not be created',
     answerFailed: 'The answer could not be created',
+    geminiKeyMissing: 'Set GEMINI_API_KEY in .env to use Gemini for answers',
     tooManyChunks: 'This file produces too many passages to store',
     tooManyRequests: 'Too many requests. Wait a moment and try again.',
 }
