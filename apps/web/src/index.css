@@ -107,7 +107,8 @@ button {
   color: #374151;
 }
 
-.avatar {
+.avatar,
+.avatar-placeholder {
   width: 34px;
   height: 34px;
   display: grid;
@@ -115,6 +116,22 @@ button {
   border-radius: 50%;
   color: #fff;
   background: linear-gradient(180deg, #7dd3c7, #3aa89a);
+  flex: none;
+}
+
+.avatar-photo {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex: none;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.9);
+}
+
+.avatar-name {
+  font-weight: 600;
+  color: #1f2937;
+  line-height: 1.2;
 }
 
 .chevron {
@@ -205,6 +222,7 @@ button {
 }
 
 .mode-button {
+  position: relative;
   width: 92px;
   min-height: 74px;
   display: grid;
@@ -215,6 +233,35 @@ button {
   background: #fff;
   color: #374151;
   font-size: 12px;
+}
+
+.mode-tooltip {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  z-index: 5;
+  width: 220px;
+  margin-left: -110px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.45;
+  text-align: left;
+  color: #1f2937;
+  background: #fff;
+  border: 1px solid rgba(94, 234, 212, 0.5);
+  box-shadow: 0 12px 28px rgba(15, 118, 110, 0.16);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.15s ease, visibility 0.15s ease;
+}
+
+.mode-button:hover .mode-tooltip,
+.mode-button:focus-visible .mode-tooltip {
+  opacity: 1;
+  visibility: visible;
 }
 
 .mode-button.is-active {
@@ -256,6 +303,10 @@ button {
 .panel-head {
   justify-content: space-between;
   margin-bottom: 8px;
+}
+
+.panel-head-title-only {
+  justify-content: flex-start;
 }
 
 .icon-button {
@@ -389,6 +440,39 @@ button {
 .file-badge-sheet {
   color: #059669;
   background: #d1fae5;
+}
+
+.chunks-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  max-height: min(52vh, 520px);
+}
+
+.chunk-list-scroll {
+  flex: 1;
+  min-height: 140px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 4px;
+  margin-right: -2px;
+}
+
+.chunk-list-scroll::-webkit-scrollbar {
+  width: 7px;
+}
+
+.chunk-list-scroll::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(15, 118, 110, 0.28);
+}
+
+.chunk-list-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chunks-panel .chunk-list {
+  padding-bottom: 4px;
 }
 
 .chunk-card {
@@ -539,6 +623,161 @@ button {
 
 .health-check.is-down .health-check-message {
   color: #9f1239;
+}
+
+.settings-page .settings-layout {
+  display: grid;
+  gap: 16px;
+}
+
+.settings-card h2 {
+  margin-bottom: 12px;
+}
+
+.settings-account-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.settings-avatar {
+  width: 52px;
+  height: 52px;
+}
+
+.settings-name {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 750;
+  color: #111827;
+}
+
+.settings-email {
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.settings-mode-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 12px;
+}
+
+.settings-mode-item {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(28, 36, 48, 0.06);
+}
+
+.settings-mode-icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  flex: none;
+  color: #0f766e;
+  background: #ecfdf5;
+}
+
+.settings-mode-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 650;
+  color: #1f2937;
+}
+
+.settings-mode-hint {
+  margin: 4px 0 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: #6b7280;
+}
+
+.settings-overall {
+  margin: 0 0 12px;
+  font-size: 14px;
+  font-weight: 650;
+  color: #9f1239;
+}
+
+.settings-overall-ok {
+  color: #047857;
+}
+
+.settings-health-grid {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 10px;
+}
+
+.health-card {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(28, 36, 48, 0.06);
+}
+
+.health-card.is-down {
+  border-color: rgba(251, 113, 133, 0.35);
+  background: rgba(255, 241, 242, 0.7);
+}
+
+.health-card-icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  color: #0f766e;
+  background: #ecfdf5;
+}
+
+.health-card.is-down .health-card-icon {
+  color: #9f1239;
+  background: #fff1f2;
+}
+
+.health-card-body {
+  min-width: 0;
+}
+
+.health-card-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 650;
+  color: #1f2937;
+}
+
+.health-card-message {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.health-card.is-down .health-card-message {
+  color: #9f1239;
+}
+
+.health-card-status {
+  color: #9f1239;
+}
+
+.health-card-status-ok {
+  color: #059669;
 }
 
 @media (max-width: 860px) {

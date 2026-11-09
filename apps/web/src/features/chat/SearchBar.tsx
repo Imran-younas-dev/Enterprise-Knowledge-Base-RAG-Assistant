@@ -1,6 +1,6 @@
 import { FormEvent } from 'react'
 import { BrainIcon, DeepSearchIcon, GlobeIcon, SearchIcon } from '../../components/Icons'
-import { searchModes, type SearchMode } from '../../data/knowledge'
+import { searchModeHints, searchModes, type SearchMode } from '../../data/knowledge'
 
 const modeIcons = {
   web: GlobeIcon,
@@ -55,8 +55,13 @@ export function SearchBar({
                 type="button"
                 disabled={disabled}
                 className={mode === item.id ? 'mode-button is-active' : 'mode-button'}
+                title={searchModeHints[item.id]}
+                aria-describedby={`mode-tip-${item.id}`}
                 onClick={() => onModeChange(item.id)}
               >
+                <span className="mode-tooltip" id={`mode-tip-${item.id}`} role="tooltip">
+                  {searchModeHints[item.id]}
+                </span>
                 <Icon />
                 <span>{item.label}</span>
               </button>
