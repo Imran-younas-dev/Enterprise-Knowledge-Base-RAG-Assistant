@@ -66,7 +66,10 @@ export function SourceDocuments({
                 <span className="doc-title">
                   {document.title}
                   <span className="doc-title-sep"> · </span>
-                  <span className="doc-status-inline" title={statusLabel(document)}>
+                  <span
+                    className={`doc-status-inline ${statusToneClass(document.status)}`}
+                    title={statusLabel(document)}
+                  >
                     {statusLabel(document)}
                   </span>
                 </span>
@@ -89,6 +92,19 @@ function rowClass(document: SourceDocument, selectedId: string) {
     parts.push('is-failed')
   }
   return parts.join(' ')
+}
+
+function statusToneClass(status: string) {
+  if (status === 'ready') {
+    return 'is-ready'
+  }
+  if (status === 'queued' || status === 'processing') {
+    return 'is-pending'
+  }
+  if (status === 'failed') {
+    return 'is-failed'
+  }
+  return ''
 }
 
 function statusLabel(document: SourceDocument) {
